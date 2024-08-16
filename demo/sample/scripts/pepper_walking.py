@@ -20,41 +20,38 @@ import pickle
 
 
 
-def blindGreetingRoutine():
-   
+def Greeting():
     im.init()
     im.setProfile(['*', '*', 'it', '*'])
-    name = im.activeUser()
-    greeting_message = "Welcome back " + name
-    im.executeModality("TTS",greeting_message)
+    im.execute("custom_greeting")
+
+    
+
+
+    
+
 
 if __name__ == "__main__":
 
-    user_db = {"bruno":"blind"}
-    # cmdsever_ip = '127.0.0.1'
-    # cmdserver_port = 9101
-    # demo_ip = '127.0.0.1'
-    # demo_port = 8000
+    ## TODO: aggiungere human detection con sensori
 
+    user_db = {"bruno":"deaf"} # Dictionary that simulates users' database
+   
     mws = ModimWSClient()
     mws.setDemoPathAuto(__file__)
-    pwu_obj = PepperWalkingUtils()
-    
-    
-    # Specifica il percorso del file
-    
-    active_user = random.choice(['bruno']) ##['known','unknown'] ## virtualize face recognition 
-    
-    #mws.setGlobalVar("user_name",active_user)
-    if active_user != 'unknown':
-        pwu_obj.setUser(active_user)
-        disability = user_db[active_user]
-        if disability == "blind":
-            mws.run_interaction(blindGreetingRoutine)
-            
-    
-    
-    #mws.run_interaction(knownUserRoutine)
 
-    # local execution
-    #mws.run_interaction(customRoutine)
+    pwu_obj = PepperWalkingUtils()
+    actions_path = pwu_obj.actionsPath()
+    active_user = random.choice(user_db.keys()) ##['known','unknown'] ## virtualization of face recognition step
+    
+    if active_user != 'unknown': ## If the user is already registered
+
+        disability = user_db[active_user] #Extract disability
+        pwu_obj.createCustomGreeting(active_user,disability) #Save active username
+
+        if disability == "blind": # If blind
+            mws.run_interaction(Greeting)   
+        
+        elif disability == "deaf":
+            mws.run_interaction(Greeting)   
+            
