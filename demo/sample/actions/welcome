@@ -12,9 +12,3 @@ TTS
 <*,*,it,*>: Ciao! Benvenuto!
 <*,*,*,*>:  Hello! Welcome!
 ----
-BUTTONS
-start
-<*,*,it,*>: Inizia
-<*,*,*,*>:  Start
-----
-

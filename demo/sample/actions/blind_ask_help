@@ -1,0 +1,16 @@
+IMAGE
+<*, *, *, *>:  img/help.png
+----
+TEXT
+<*, *, it, *>:  Aiutando l'utente...
+<*, *, *, *>:   Helping the user...
+----
+TTS
+<*,*,it,*>: Posso esserti di aiuto?
+<*,*,*,*>:  May I help you?
+----
+ASR 
+<*,*,it,*>:  {'agree': ['si'], 'disagree': ['no']}
+<*,*,*,*>:  {'agree': ['yes'], 'disagree': ['no']}
+----
+

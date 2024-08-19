@@ -1,0 +1,21 @@
+IMAGE
+<*, *, *, *>:  img/happy.png
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Yes_1
+----
+TEXT
+<*,*,it,*>: Scegli la tua destinazione!
+<*,*,*,*>:  Choose your destination!
+----
+BUTTONS
+dest1
+<*,*,it,*>: destination1
+<*,*,*,*>:  destination1
+dest2
+<*,*,it,*>: destination2
+<*,*,*,*>:  destination2
+dest3
+<*,*,it,*>: destination3
+<*,*,*,*>:  destination3
+----
