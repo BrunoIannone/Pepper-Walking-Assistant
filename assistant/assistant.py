@@ -163,7 +163,7 @@ def procedure(target_room):
 
     # Establish if the robot has to move left or right
     global hand_picked
-    if x > 0:
+    if target_room[0] > 0:
         # The robot has to move right, raise left hand
         hand_picked = "Left"
     else:
