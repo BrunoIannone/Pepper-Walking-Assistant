@@ -77,6 +77,11 @@ hand_picked = 'Left'
 # Target coordinates
 global x, y
 
+# Store the last position when the hand is released
+global last_position
+last_position = None
+
+
 # ---------------------------------- Methods --------------------------------- #
 
 
@@ -119,22 +124,29 @@ def perform_movement(joint_values, speed=1.0, _async=True):
 
 
 def on_hand_touched(_name, _value, _subscriber_identifier):
-    global hand_touched
+    global hand_touched, last_position
     hand_touched = True
 
     asay("Let's begin!")
 
-    global me_service
-    me_service.unsubscribeToEvent("Hand" + hand_picked + "BackTouched", "on_hand_touched")
+    global me_service, mo_service
+    global x, y
+
+    if last_position:
+        x, y = last_position
     mo_service.post.moveTo(x, y, 0)
+
+    me_service.unsubscribeToEvent("Hand" + hand_picked + "BackTouched", "on_hand_touched")
 
 
 def on_hand_released(_name, _value, _subscriber_identifier):
-    
-    # asay("Would you like to cancel?")
+    global mo_service, me_service, last_position
+
     asay("Are you sure you want to cancel?")
-    
-    global mo_service, me_service
+
+    # Store the current position when the hand is released
+    last_position = mo_service.getNextRobotPosition()
+
     mo_service.stopMove()
     me_service.unsubscribeToEvent("Hand" + hand_picked + "BackReleased", "on_hand_released")
 
