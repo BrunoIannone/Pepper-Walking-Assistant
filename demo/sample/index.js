@@ -8,18 +8,17 @@ function stopWelcoming() {
 }
 
 function startWelcoming() {
-  document.getElementById('text_default').innerText = "";
+  //document.getElementById('text_default').innerText = "";
 
   var changed = true;
   intervalId = setInterval(function() {
   if (changed) {
-    document.getElementById('text_default').innerText = "Welcome, put yourself in front of me to start";
+    document.getElementById('text_default').innerText = "Put yourself in front of me to start";
     changed = false;
   } else {
-    document.getElementById('text_default').innerText = "Benvenuto, mettiti di fronte a me per iniziare.";
+    document.getElementById('text_default').innerText = "Mettiti di fronte a me per iniziare.";
     changed = true;
   }
-  console.log(intervalId)
   }, 5000); // 10000 milliseconds = 10 seconds
 }
 // websocket global variable
@@ -103,7 +102,7 @@ function wsrobot_init(ip, port) {
             console.log('load url: '+p)
             window.location.assign(p)
         }
-        if(event.data === 'display_text_default_'){
+        if(event.data.includes('display_text_default_')){
           startWelcoming()
         } 
     } 

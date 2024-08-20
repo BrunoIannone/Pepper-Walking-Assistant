@@ -62,7 +62,6 @@ def blindAskHelp():
 if __name__ == "__main__":
 
     ## TODO: aggiungere human detection con sensori
-
     user_db = {"Bruno":"deaf"} # Dictionary that simulates users' database
    
     mws = ModimWSClient()
