@@ -3,7 +3,25 @@ function append(text) {
   // document.getElementById("websocket_events").insertAdjacentHTML('beforeend', "<li>" + text + ";</li>");
   console.log(text);
 } 
+function stopWelcoming() {
+  clearInterval(intervalId);
+}
 
+function startWelcoming() {
+  document.getElementById('text_default').innerText = "";
+
+  var changed = true;
+  intervalId = setInterval(function() {
+  if (changed) {
+    document.getElementById('text_default').innerText = "Welcome, put yourself in front of me to start";
+    changed = false;
+  } else {
+    document.getElementById('text_default').innerText = "Benvenuto, mettiti di fronte a me per iniziare.";
+    changed = true;
+  }
+  console.log(intervalId)
+  }, 5000); // 10000 milliseconds = 10 seconds
+}
 // websocket global variable
 var websocket = null;
 
@@ -24,6 +42,8 @@ function wsrobot_init(ip, port) {
     websocket = new WebSocket(url);
 
     websocket.onmessage = function(event) {
+        stopWelcoming();
+
         console.log("message received: "+event.data);
         v = event.data.split('_');
         
@@ -83,6 +103,9 @@ function wsrobot_init(ip, port) {
             console.log('load url: '+p)
             window.location.assign(p)
         }
+        if(event.data === 'display_text_default_'){
+          startWelcoming()
+        } 
     } 
 
     websocket.onopen = function(){

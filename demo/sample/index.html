@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>Welcome</title>
 
-  <script src="qaws.js"></script>
+  <script src="./index.js"></script>
 
   <style>
     body {
@@ -45,7 +45,7 @@
 
     <p>
     <h1>
-    <div align='center' id='text_default'>Welcome</div>
+    <div align='center' id='text_default'>Benvenuto, mettiti di fronte a me per iniziare.</div>
     </h1>
     </p>
 
@@ -60,7 +60,7 @@
   <!-- ****** SCRIPTS ****** -->
 
   <script>
-
+    var intervalId;
     var ip=window.location.hostname;
     if (ip=='')
         ip='127.0.0.1';
@@ -74,6 +74,9 @@
         codews.send("im.robot.say('hello')\n");
     }
 
+  </script>
+  <script>
+    startWelcoming()
   </script>
 
 </body>

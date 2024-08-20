@@ -5,14 +5,14 @@ class PepperWalkingUtils():
 
     def recognizedUser(self):
         return True
-
+ 
     def actionsPath(self):
         return os.path.join(os.path.dirname(os.path.realpath(__file__ )),"../actions/")
     
     def createCustomGreeting(self, user_name,disability):
         with open("/home/robot/src/modim/demo/sample/actions/custom_greeting", "w") as file:
         
-            if disability == "blind":
+            if disability == "blind": #Blind
                 contenuto = """IMAGE
 <*, *, *, *>:  img/welcome.jpg
 ----
@@ -21,7 +21,7 @@ TTS
 <*,*,*,*>:  Hello! Welcome {0}
 ----""".format(user_name)
                 
-            else:
+            else:                     #Deaf
                 contenuto = """IMAGE
 <*, *, *, *>:  img/welcome.jpg
 ----
