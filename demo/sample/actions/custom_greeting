@@ -1,7 +1,13 @@
 IMAGE
 <*, *, *, *>:  img/welcome.jpg
 ----
-TTS
-<*,*,it,*>: Ciao! Benvenuto Bruno
-<*,*,*,*>:  Hello! Welcome Bruno
+TEXT_title
+<*, *, *, *>:  Welcome to Diag
+----
+TEXT
+<*,*,it,*>: Benvenuto Bruno
+<*,*,*,*>:  Welcome Bruno
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Hey_1
 ----

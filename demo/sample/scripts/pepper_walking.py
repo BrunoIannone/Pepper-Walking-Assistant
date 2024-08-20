@@ -52,7 +52,32 @@ def blindAskHelp():
         im.init()
         ## TODO: reset procedure?        
 
+def waitForHuman():
 
+    
+    #im.init()
+    stop_detection = False
+    is_human_detected = False
+
+    #im.executeModality('TEXT_default','Waiting for a human')
+
+    #Checking if human stay in front of Pepper more than 2 seconds
+    im.robot.startSensorMonitor()
+    while not stop_detection:
+        while not is_human_detected:
+            p = im.robot.sensorvalue() #p is the array with data of all the sensors
+            is_human_detected = p[1] > 0.0 and p[1] < 1.0 #p[1] is the Front sonar
+        if is_human_detected:
+            print('*Person detected*')
+            time.sleep(2)
+            p = im.robot.sensorvalue()
+            is_human_detected = p[1] > 0.0 and p[1] < 1.0
+            if is_human_detected:
+                print('*Person still there*')
+                stop_detection = True
+            else:
+                print('*Person gone*')
+    im.robot.stopSensorMonitor()
 
 
 
@@ -61,14 +86,16 @@ def blindAskHelp():
 
 if __name__ == "__main__":
 
-    ## TODO: aggiungere human detection con sensori
-    user_db = {"Bruno":"deaf"} # Dictionary that simulates users' database
+    user_db = {"Bruno":"deaf"}#, "Carla": "blind"} # Dictionary that simulates users' database
    
     mws = ModimWSClient()
     mws.setDemoPathAuto(__file__)
 
     pwu_obj = PepperWalkingUtils()
     actions_path = pwu_obj.actionsPath()
+    
+    #mws.run_interaction(waitForHuman) # Wait for human to position
+    
     active_user = random.choice(user_db.keys()) ##['known','unknown'] ## virtualization of face recognition step
     
     if active_user != 'unknown': ## If the user is already registered
