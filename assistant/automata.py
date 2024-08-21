@@ -1,9 +1,9 @@
 import threading
 
 
-class State:
+class State(object):
 
-    def __init__(self, name, automaton) -> None:
+    def __init__(self, name, automaton):
         self.name = name
         self.automaton = automaton
 
@@ -20,14 +20,14 @@ class State:
         """
         pass
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.name
     
 
 class TimeoutState(State):
 
-    def __init__(self, name, automaton, timeout=None, timeout_event=None) -> None:
-        super().__init__(name, automaton)
+    def __init__(self, name, automaton, timeout=None, timeout_event=None):
+        super(TimeoutState, self).__init__(name, automaton)
         self.timeout = timeout
         self.timeout_event = timeout_event
         self.timer = None
@@ -75,7 +75,7 @@ class FiniteStateAutomaton:
 
     def set_initial_state(self, state_name):
         if state_name not in self.states:
-            raise ValueError(f"State '{state_name}' does not exist.")            
+            raise ValueError("State '" + state_name + "' does not exist.")            
         self.current_state = self.states[state_name]
 
     def change_state(self, state_name):
@@ -83,9 +83,9 @@ class FiniteStateAutomaton:
             self.current_state = self.states[state_name]
             self.current_state.on_enter()
         else:
-            raise ValueError(f"State '{state_name}' does not exist.")
+            raise ValueError("State '" + state_name + "' does not exist.")
 
     def on_event(self, event):
         if self.current_state is None:
-            raise ValueError(f"Automaton has not been initialized yet.")
+            raise ValueError("Automaton has not been initialized yet.")
         self.current_state.on_event(event)

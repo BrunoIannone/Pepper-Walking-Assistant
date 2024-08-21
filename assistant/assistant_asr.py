@@ -64,7 +64,7 @@ global ap_service # Animation Player
 global mo_service # Motion
 global me_service # Memory
 global to_service # Touch
-# global sr_service # Speech Recognition
+global sr_service # Speech Recognition
 
 # --------------------------------- Variables -------------------------------- #
 
@@ -72,11 +72,17 @@ global to_service # Touch
 global hand_picked
 hand_picked = 'Left'
 
+"""
+# State to track if the hand is currently touched or not 
+global hand_touch_status
+hand_touch_stastus = 0.0
+"""
+
 # Finite state automata
 global automaton
 
 # Signals
-global touch_subscriber #, word_subscriber
+global word_subscriber, touch_subscriber
 
 # Current and target position
 global current_x, current_y
@@ -89,10 +95,10 @@ current_y = 0
 class SteadyState(State):
 
     def __init__(self, automaton):
-        super(SteadyState, self).__init__('steady_state', automaton)
+        super().__init__('steady_state', automaton)
 
     def on_enter(self):
-        super(SteadyState, self).on_enter()
+        super().on_enter()
         print("[INFO] Entering Steady State")
         
         # Behavior
@@ -101,27 +107,27 @@ class SteadyState(State):
         animated_say("Grab my " + hand_picked + " hand and I'll guide you there!")
 
     def on_event(self, event):
-        super(SteadyState, self).on_event(event)
+        super().on_event(event)
         if event == 'hand_touched':
             self.automaton.change_state('moving_state')
 
 class MovingState(State):
 
     def __init__(self, automaton):
-        super(MovingState, self).__init__('moving_state', automaton)
+        super().__init__('moving_state', automaton)
 
     def on_enter(self):
-        super(MovingState, self).on_enter()
+        super().on_enter()
         print("[INFO] Entering Moving State")
 
         # Behavior
         global target_x, target_y
         global current_x, current_y
-        theta = math.atan2(target_y - current_y, target_x - current_x)
+        theta = math.atan(target_y - current_y, target_x - current_x)
         move_to(target_x, target_y, theta)
     
     def on_event(self, event):
-        super(MovingState, self).on_event(event)
+        super().on_event(event)
         if event == 'hand_released':
             stop_motion()
             self.automaton.change_state('ask_state')
@@ -129,55 +135,52 @@ class MovingState(State):
 class QuitState(State):
 
     def __init__(self, automaton):
-        super(QuitState, self).__init__('quit_state', automaton)
+        super().__init__('quit_state', automaton)
 
     def on_enter(self):
-        super(QuitState, self).on_enter()
+        super().on_enter()
         print('[INFO] Entering Quit State')
     
     def on_event(self, event):
-        super(QuitState, self).on_event(event)
+        super().on_event(event)
 
         # Unsubscribe from signals
-        global sr_service, touch_subscriber #, word_subscriber
+        global word_subscriber, touch_subscriber, sr_service
         sr_service.unsubscribe("pepper_walking_assistant_ASR")
-        # word_subscriber.signal.disconnect()
+        word_subscriber.signal.disconnect()
         touch_subscriber.signal.disconnect()
 
 class HoldHandState(TimeoutState):
 
-    def __init__(self, automaton, timeout=20):
-        super(HoldHandState, self).__init__('hold_hand_state', automaton, timeout=timeout, timeout_event='quit_state')
+    def __init__(self, automaton):
+        super().__init__('hold_hand_state', automaton, timeout=20, timeout_event='quit_state')
 
     def on_enter(self):
-        super(HoldHandState, self).on_enter()
+        super().on_enter()
         print('[INFO] Entering Hold Hand State')
 
         # Behavior
         animated_say("Grab my hand to continue!")
     
     def on_event(self, event):
-        super(HoldHandState, self).on_event(event)
+        super().on_event(event)
         if event == 'hand_touched':
             self.automaton.change_state('moving_state')
 
 class AskState(TimeoutState):
 
-    def __init__(self, automaton, timeout=20):
-        super(AskState, self).__init__('ask_state', automaton, timeout=timeout, timeout_event='steady_state')
+    def __init__(self, automaton):
+        super().__init__('ask_state', automaton, timeout=20, timeout_event='steady_state')
     
     def on_enter(self):
-        super(AskState, self).on_enter()
-        print("[INFO] Entering Ask State")
+        super().on_enter()
+        print("[Automaton] Entering Ask State")
 
         # Behavior
         animated_say("Do you want to cancel?")
-
-        # TODO remove user response simulation
-        on_word_recognized(None)
     
     def on_event(self, event):
-        super(AskState, self).on_event(event)
+        super().on_event(event)
         if event == 'response_yes':
             self.automaton.change_state('quit_state')
         elif event == 'response_no':
@@ -230,6 +233,42 @@ def move_to(x, y, theta):
 def stop_motion():
     pass
 
+def procedure(target_coords):
+
+    """
+    global hand_picked
+
+    # Unpack the target coordinates
+    x, y = target_coords
+
+    # Establish if the robot has to move left or right
+    if x > 0:
+        # The robot has to move right, raise left hand
+        hand_picked = "Left"
+    else:
+        # The robot has to move left, raise right hand
+        hand_picked = "Right"
+    print("[INFO] " + hand_picked + " selected")
+
+    # Raise the respective arm (async)
+    perform_movement(joint_values=left_arm_raised if hand_picked == 'Left' else right_arm_raised, speed=0.25)
+
+    # Give instructions to the user while the hand is raising
+    asay("Hold my " + hand_picked.lower() + " hand and I'll guide you there!")
+
+    # Wait for the touch or timeout
+    time.sleep(20)  # Giving the user 20 seconds to touch the hand
+    
+    if hand_touch_status == 0.0:
+        print("[INFO] No touch detected.")
+        asay("No touch detected.")
+
+    # Return to default posture
+    perform_movement(default_posture)
+    """
+
+    pass
+
 # --------------------------------- Callbacks -------------------------------- #
 
 def on_hand_touch_change(value):
@@ -250,8 +289,6 @@ def on_word_recognized(value):
     Callback function triggered when a word is recognized.
     Dispatch the event to the automata.
     """
-
-    """
     recognized_word = value[0] if value else ""
     print("[INFO] Recognized word: ", recognized_word)
     
@@ -262,17 +299,7 @@ def on_word_recognized(value):
         automaton.on_event('response_no')
     else:
         print("[INFO] Response not recognized")
-    """
 
-    time.sleep(random.randint(2, 4))
-
-    global automaton
-    if random.random() > 0.5:
-        print('[USER] yes')
-        automaton.on_event('response_yes')
-    else:
-        print('[USER] no')
-        automaton.on_event('response_no')
 
 # ----------------------------------- Main ----------------------------------- #
 
@@ -300,25 +327,23 @@ def main():
     session = app.session
 
     # Initialize the services
-    global as_service, bm_service, ap_service, mo_service, me_service #, sr_service
+    global as_service, bm_service, ap_service, mo_service, me_service, sr_service
     as_service = session.service("ALAnimatedSpeech")
     bm_service = session.service("ALBehaviorManager")
     ap_service = session.service("ALAnimationPlayer")
     mo_service = session.service("ALMotion")
     me_service = session.service("ALMemory")
-    # sr_service = session.service("ALSpeechRecognition")
+    sr_service = session.service("ALSpeechRecognition")
 
     # Establish which hand to use
     global target_x, target_y
     target_x, target_y = args.coords
-    print("[INFO] Target position: " + str(target_x) + ", " + str(target_y))
 
     global hand_picked
-    hand_picked = 'Right' if target_x < 0 else 'Left'
-    print("[INFO] Raising " + hand_picked.lower() + " hand")
+    hand_picked = 'Left' if target_x < 0 else 'Right'
+    print("[INFO] Target position: " + target_x + ", " + y)
 
     # Create the automata
-    global automaton
     automaton = FiniteStateAutomaton()
 
     steady_state = SteadyState(automaton)
@@ -336,23 +361,23 @@ def main():
     automaton.set_initial_state('steady_state')
 
     # Connect the pepper event callbacks to the automaton
-    global touch_subscriber #, word_subscriber
+    global word_subscriber, touch_subscriber
 
     touch_event = "Hand" + hand_picked + "BackTouched"
     touch_subscriber = me_service.subscriber(touch_event)
     touch_signal = touch_subscriber.signal.connect(on_hand_touch_change)
 
-    """
     sr_service.setLanguage("English")
     sr_service.setVocabulary(["yes", "no"], False)
     sr_service.subscribe("pepper_walking_assistant_ASR")  # Start the speech recognition engine with user pepper_walking_assistant_ASR
     word_subscriber = me_service.subscriber("WordRecognized") # Subscribe to event WordRecognized
     word_signal = word_subscriber.signal.connect(on_word_recognized)
-    """
-
+    
     # Program stays at this point until we stop it
     app.run()
-    
+
+    # Disconnect signals and unsubscribe (?)
+
     print("[INFO] Done")
 
 
