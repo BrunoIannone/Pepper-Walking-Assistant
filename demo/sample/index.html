@@ -3,33 +3,11 @@
 <head>
   <meta charset="utf-8">
   <title>Welcome</title>
+  <link rel="stylesheet" href="index.css">
 
-  <script src="qaws.js"></script>
+  <script src="./index.js"></script>
 
-  <style>
-    body {
-      background-color: #fff;
-      font-family: sans-serif;
-    }
-    h1 {
-      font-weight: normal;
-      font-size: 300%;
-    }
-
-  input[type=button] {
-    background-color: #A01010; /* Red */
-    border: none;
-    border-radius: 8px;
-    color: white;
-    padding: 14px 24px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 24px;
-    margin:10px 10px 10px 10px;
-  }
-
-  </style>
+  
 </head>
 <body>
 
@@ -45,7 +23,7 @@
 
     <p>
     <h1>
-    <div align='center' id='text_default'>Welcome</div>
+    <div align='center' id='text_default'>Mettiti di fronte a me per iniziare.</div>
     </h1>
     </p>
 
@@ -60,7 +38,7 @@
   <!-- ****** SCRIPTS ****** -->
 
   <script>
-
+    var intervalId;
     var ip=window.location.hostname;
     if (ip=='')
         ip='127.0.0.1';
@@ -74,6 +52,9 @@
         codews.send("im.robot.say('hello')\n");
     }
 
+  </script>
+  <script>
+    startWelcoming()
   </script>
 
 </body>

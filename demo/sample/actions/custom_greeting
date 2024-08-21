@@ -1,0 +1,13 @@
+IMAGE
+<*, *, *, *>:  img/welcome.jpg
+----
+TEXT_title
+<*, *, *, *>:  Welcome to Diag
+----
+TEXT
+<*,*,it,*>: Benvenuto Bruno
+<*,*,*,*>:  Welcome Bruno
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Hey_1
+----
