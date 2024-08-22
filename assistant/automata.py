@@ -73,10 +73,11 @@ class FiniteStateAutomaton:
     def add_state(self, state):
         self.states[state.name] = state
 
-    def set_initial_state(self, state_name):
+    def start(self, state_name):
         if state_name not in self.states:
             raise ValueError("State '" + state_name + "' does not exist.")            
         self.current_state = self.states[state_name]
+        self.current_state.on_enter()
 
     def change_state(self, state_name):
         if state_name in self.states:
