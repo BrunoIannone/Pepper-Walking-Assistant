@@ -139,8 +139,8 @@ class QuitState(State):
         super(QuitState, self).on_event(event)
 
         # Unsubscribe from signals
-        global sr_service, touch_subscriber #, word_subscriber
-        sr_service.unsubscribe("pepper_walking_assistant_ASR")
+        global touch_subscriber #, word_subscriber, sr_service
+        # sr_service.unsubscribe("pepper_walking_assistant_ASR")
         # word_subscriber.signal.disconnect()
         touch_subscriber.signal.disconnect()
 
