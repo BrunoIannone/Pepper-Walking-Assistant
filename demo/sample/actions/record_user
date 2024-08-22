@@ -5,8 +5,8 @@ GESTURE
 <*,*,*,*>: animations/Stand/Gestures/Thinking_3
 ----
 TEXT
-<*,*,it,*>: Ciao! Non credo di conoscerti, vuoi usare la modalità vocale o preferisci usare il touchscreen?
-<*,*,*,*>:  Hi! I don't think I know you, would you prefer to use vocal commands or the touchscreen?
+<*,*,*,*>: Ciao! Non credo di conoscerti, vuoi usare la modalità vocale o preferisci usare il touchscreen?
+
 ----
 ASR 
 <*,*,it,*>:  {'vocal': ['comandi vocali', 'comandi','vocali'], 'touch': ['touchscreen','touch','screen']}

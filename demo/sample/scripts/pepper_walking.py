@@ -18,12 +18,13 @@ from ws_client import *
 import pepper_walking_utils 
 from pepper_walking_utils import *
 import pickle
+import interactions
 
 def setProfileEn():
-    im.init()
+    im.setProfile(['*', '*', '*', '*'])
 
 def setProfileIt():
-    im.init()
+    #im.init()
     im.setProfile(['*', '*', 'it', '*'])
 
 def greeting():
@@ -37,7 +38,7 @@ def deafAskHelp():
             required_dest = im.ask('deaf_agree',timeout = 999)
 
             with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write("ok")
+                file.write(required_dest)
 
             #subprocess.run(['python', '/home/robot/playground/pepper_walking_assistant/assistant/assistant.py'])
            
@@ -55,7 +56,10 @@ def deafAskHelp():
 def blindAskHelp():
     q = im.ask('blind_ask_help',timeout = 999)
     if(q == 'agree'):
-        im.execute('blind_agree')
+        required_dest = im.ask('blind_agree',timeout = 999)
+        with open("/home/robot/playground/outcome.txt","w") as file:
+            file.write(required_dest)
+
     else:
         im.execute('blind_disagree')
         time.sleep(5)
@@ -91,12 +95,15 @@ def recordUser():
                 file.write(str(modality).strip())
 
     
-
+def askLanguage():
+    modality = im.ask("ask_language",timeout = 999)
+    with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write(str(modality).strip())
 
 
 if __name__ == "__main__":
 
-    user_db = {"Bruno":["deaf","en"]}#"unknown":[]}#,Bruno":["deaf","en"]}#, "Carla": "blind"} # Dictionary that simulates users' database
+    user_db = {"unknown":[]} #"unknown":[]}#,Bruno":["deaf","en"]}#, "Carla": "blind"} # Dictionary that simulates users' database
    
     mws = ModimWSClient()
     mws.setDemoPathAuto(__file__)
@@ -107,40 +114,68 @@ if __name__ == "__main__":
     #while True:
     #    mws.run_interaction(waitForHuman) # Wait for human to position
     active_user = random.choice(user_db.keys()) ##['known','unknown'] ## virtualization of face recognition step
-    
+    print(active_user)
     if active_user != 'unknown': ## If the user is already registered
 
         language = user_db[active_user][1]   #Extract language
-        if language == "en":
-            mws.run_interaction(setProfileEn)
-        else:
-            mws.run_interaction(setProfileIt)
-
-            
-
+        
 
         disability = user_db[active_user][0] #Extract disability
 
-        pwu_obj.createCustomGreeting(active_user,disability) #Save active username
-
-        if disability == "blind": # If blind
-            mws.run_interaction(greeting)
-            time.sleep(2)
-            mws.run_interaction(blindAskHelp)
-            
-        
-        elif disability == "deaf":
-            mws.run_interaction(greeting)
-            time.sleep(2)
-            mws.run_interaction(deafAskHelp) 
-            if(pwu_obj.isSuccess()):
-                print("SUCCESS")
-                # with open('/home/robot/playground/pepper_walking_assistant/assistant/assistant.py') as file:
-                #     exec(file.read())
-                subprocess.call(['python', '/home/robot/playground/pepper_walking_assistant/assistant/assistant.py'])
-
-            else:
-                print("FAILURE")
     else:
         mws.run_interaction(recordUser)
+        status =  pwu_obj.checkStatus()
+        if(status != "failure"):
+            if(status == "vocal"):
+                disability = "blind"
+            else:
+                disability = "deaf"
+        
+        mws.run_interaction(askLanguage)
+        status =  pwu_obj.checkStatus()
+        print("STATUS "+ status)
+        if(status != "failure"):
+            if(status == "english"):
+                language = "en"
+            else:
+                language = "it"
+
+    if language == "en":
+            mws.run_interaction(setProfileEn)
+    else:
+        mws.run_interaction(setProfileIt)
+
+    pwu_obj.createCustomGreeting("",disability) #Save active username
+
+    if disability == "blind": # If blind
+        mws.run_interaction(greeting)
+        time.sleep(2)
+        mws.run_interaction(blindAskHelp)
+        
+        status =  pwu_obj.checkStatus()
+        if(status != "failure"):
+            print("[BLIND] launching assistant.py")
+            #subprocess.call(['python', '/home/robot/playground/pepper_walking_assistant/assistant/assistant.py'])
+
+        else:
+            print("[BLIND] aborted")
+            time.sleep(10)
+            #continue
+    
+    elif disability == "deaf": # If deaf
+        mws.run_interaction(greeting)
+        time.sleep(2)
+        mws.run_interaction(deafAskHelp)
+
+        status =  pwu_obj.checkStatus()
+        if(status != "failure"):
+            print("[DEAF] launching assistant.py")
+            #subprocess.call(['python', '/home/robot/playground/pepper_walking_assistant/assistant/assistant.py'])
+
+        else:
+            print("[DEAF] aborted")
+            time.sleep(10)
+            #continue
+
+
         

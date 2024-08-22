@@ -1,23 +1,20 @@
 IMAGE
-<*, *, *, *>:  img/registration.png
+<*, *, *, *>: img/language.png
 ----
 GESTURE
 <*,*,*,*>: animations/Stand/Gestures/Thinking_3
 ----
 TEXT
-<*,*,it,*>: Ciao! Non credo di conoscerti, vuoi usare la modalità vocale o preferisci usare il touchscreen?
-<*,*,*,*>:  Hi! I don't think I know you, would you prefer to use vocal commands or the touchscreen?
+<*,*,*,*>: Che lingua preferisci: italiano o inglese?
 ----
 ASR 
-<*,*,it,*>:  {'vocal': ['comandi vocali', 'comandi','vocali'], 'touch': ['touchscreen','touch','screen']}
-<*,*,*,*>:  {'vocal': ['vocal commands','vocal','commands'], 'touch': ['touchscreen','touch','screen']}
+<*,*,it,*>:  {'italian': ['italiano'], 'english': ['inglese']}
+<*,*,*,*>:  {'italian': ['italian'], 'english': ['english']}
 ----
 BUTTONS
-vocal
-<*,*,it,*>: Comandi vocali
-<*,*,*,*>:  Vocal commands
-touch
-<*,*,it,*>: Touchscreen
-<*,*,*,*>:  Touchscreen
+italian
+<*,*,*,*>: Italiano
+english
+<*,*,*,*>: English
 ----
 

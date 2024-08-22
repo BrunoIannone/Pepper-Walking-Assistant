@@ -5,8 +5,8 @@ GESTURE
 <*,*,*,*>: animations/Stand/Gestures/Desperate_5
 ----
 TEXT
-<*,*,it,*>: Mi spiace!
-<*,*,*,*>:  I'm sorry
+<*,*,it,*>: Peccato! Allontanarsi per favore!
+<*,*,*,*>:  I'm sorry! Step back please!
 ----
 
 

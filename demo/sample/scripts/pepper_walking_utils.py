@@ -14,7 +14,7 @@ class PepperWalkingUtils():
         
             if disability == "blind": #Blind
                 contenuto = """IMAGE
-<*, *, *, *>:  img/welcome.jpg
+<*, *, *, *>:  img/bear.jpg
 ----
 TTS
 <*,*,it,*>: Ciao! Benvenuto {0}
@@ -23,10 +23,7 @@ TTS
                 
             else:                     #Deaf
                 contenuto = """IMAGE
-<*, *, *, *>:  img/welcome.jpg
-----
-TEXT_title
-<*, *, *, *>:  Welcome to Diag
+<*, *, *, *>:  img/bear.jpg
 ----
 TEXT
 <*,*,it,*>: Benvenuto {0}
@@ -38,12 +35,9 @@ GESTURE
                 
             file.write(contenuto)
 
-    def isSuccess(self):
-        state = None
+    def checkStatus(self):
+        status = None
         with open("/home/robot/playground/outcome.txt", "r") as file:
-            state = file.readline().strip()
-        if state == "ok":
-            return True
-        else:
-            return False
+            status = file.readline().strip()
+        return str(status).strip()
 

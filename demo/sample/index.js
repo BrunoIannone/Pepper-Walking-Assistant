@@ -1,19 +1,42 @@
-var unk_user_timer_id;
+var unk_user_timer_id, intervalId,language_id;
 // log display function
 function append(text) {
   // document.getElementById("websocket_events").insertAdjacentHTML('beforeend', "<li>" + text + ";</li>");
   console.log(text);
 } 
 function stopWelcoming() {
+  //intervalId = null
   clearInterval(intervalId);
 }
+function stopLanguage() {
+  //intervalId = null
+  clearInterval(language_id);
+}
 function stop_welcoming_unknown_user() {
+  //unk_user_timer_id = null
   clearInterval(unk_user_timer_id);
 }
-
+function startLanguage() {
+  //document.getElementById('text_default').innerText = "";
+  if(language_id){
+    return
+  }
+  var changed = true;
+  language_id = setInterval(function() {
+  if (changed) {
+    document.getElementById('text_default').innerText = "Che lingua preferisci: italiano o inglese?";
+    changed = false;
+  } else {
+    document.getElementById('text_default').innerText = "Which language do you prefer: italian or english?";
+    changed = true;
+  }
+  }, 5000); // 10000 milliseconds = 10 seconds
+}
 function startWelcoming() {
   //document.getElementById('text_default').innerText = "";
-
+  if(intervalId){
+    return
+  }
   var changed = true;
   intervalId = setInterval(function() {
   if (changed) {
@@ -24,20 +47,25 @@ function startWelcoming() {
     changed = true;
   }
   }, 5000); // 10000 milliseconds = 10 seconds
+  console.log("SURE ID " + intervalId)
 }
 function start_welcoming_unknown_user() {
   //document.getElementById('text_default').innerText = "";
-
+  if(unk_user_timer_id){
+    return
+  }
   var changed = true;
   unk_user_timer_id = setInterval(function() {
   if (changed) {
-    document.getElementById('text_default').innerText = "Sconosciuto italiano";
+    document.getElementById('text_default').innerText = "Hi! I don't think I know you, would you prefer to use vocal commands or the touchscreen?";
     changed = false;
   } else {
-    document.getElementById('text_default').innerText = "Sconosciuto inglese";
+    document.getElementById('text_default').innerText = "Ciao! Non credo di conoscerti, vuoi usare la modalità vocale o preferisci usare il touchscreen?";
+
     changed = true;
   }
   }, 5000); // 10000 milliseconds = 10 seconds
+  console.log("IN FUNCTION " + unk_user_timer_id)
 }
 // websocket global variable
 var websocket = null;
@@ -59,7 +87,7 @@ function wsrobot_init(ip, port) {
     websocket = new WebSocket(url);
 
     websocket.onmessage = function(event) {
-        stopWelcoming();
+        //stopWelcoming();
 
         console.log("message received: "+event.data);
         v = event.data.split('_');
@@ -123,20 +151,41 @@ function wsrobot_init(ip, port) {
         }
 
         if(v[0] === "display" && v[1] === "image"){
+
           image_name = v[3].split("/")[1].split(".")[0];
-          console.log(image_name)
+          console.log("NOME IMG" + image_name)
           if(image_name === "welcome"){
-            console.log("LBERTO")
+            stopLanguage()
+            stop_welcoming_unknown_user()
+
             startWelcoming()
+
           } 
+
           else if (image_name === "registration"){
+            stopWelcoming()
+            stopLanguage()
+
             start_welcoming_unknown_user()
           }
-          
+
+          else if (image_name === "language"){
+            stopWelcoming()
+            stop_welcoming_unknown_user()
+
+            startLanguage()
+          }
+          else if (image_name === "bear"){
+            stopWelcoming()
+            stop_welcoming_unknown_user()
+            stopLanguage()
+          }
+          else{
+            stopWelcoming()
+            stop_welcoming_unknown_user()
+            stopLanguage()
+          }
         }
-        
-        //else if (event.data === "display_button_touch$Touchscreen" or event.data === )
-        console.log("QUI")
     } 
 
     websocket.onopen = function(){

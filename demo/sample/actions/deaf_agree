@@ -10,12 +10,12 @@ TEXT
 ----
 BUTTONS
 dest1
-<*,*,it,*>: destination1
+<*,*,it,*>: destinazione1
 <*,*,*,*>:  destination1
 dest2
-<*,*,it,*>: destination2
+<*,*,it,*>: destinazione2
 <*,*,*,*>:  destination2
 dest3
-<*,*,it,*>: destination3
+<*,*,it,*>: destinazione3
 <*,*,*,*>:  destination3
 ----
