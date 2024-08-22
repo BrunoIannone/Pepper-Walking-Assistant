@@ -95,13 +95,13 @@ class SteadyState(TimeoutState):
         print("[INFO] Entering Steady State")
 
         # Behavior
-        
+
         perform_movement(joint_values=default_posture)
         print('[INFO] Resetting posture')
 
         global hand_picked
         animated_say("Grab my " + hand_picked + " hand and I'll guide you there!")
-        print('[INFO] Talking')
+        print('[INFO] Talking: Grab my ' + hand_picked + " hand and I'll guide you there!")
 
         perform_movement(joint_values=left_arm_raised if hand_picked == 'Left' else right_arm_raised, speed=0.25)
         print("[INFO] Raising " + hand_picked.lower() + " hand")
@@ -146,7 +146,7 @@ class QuitState(State):
 
         # Go back to default position
         perform_movement(joint_values=default_posture)
-        print('[INFO] Going back to standard position')
+        print('[INFO] Resetting posture')
 
         # Unsubscribe from signals
         # global touch_subscriber, word_subscriber, sr_service
@@ -167,7 +167,7 @@ class HoldHandState(TimeoutState):
 
         # Behavior
         animated_say("Grab my hand to continue!")
-        print('[INFO] Talking')
+        print('[INFO] Talking: Grab my hand to continue!')
 
     def on_event(self, event):
         super(HoldHandState, self).on_event(event)
@@ -187,7 +187,7 @@ class AskState(TimeoutState):
 
         # Behavior
         animated_say("Do you want to cancel?")
-        print('[INFO] Talking')
+        print('[INFO] Talking: Do you want to cancel?')
 
         # TODO remove user response simulation
         on_word_recognized(None)
