@@ -37,3 +37,13 @@ GESTURE
 ----""".format((user_name))
                 
             file.write(contenuto)
+
+    def isSuccess(self):
+        state = None
+        with open("/home/robot/playground/outcome.txt", "r") as file:
+            state = file.readline().strip()
+        if state == "ok":
+            return True
+        else:
+            return False
+

@@ -1,3 +1,4 @@
+var unk_user_timer_id;
 // log display function
 function append(text) {
   // document.getElementById("websocket_events").insertAdjacentHTML('beforeend', "<li>" + text + ";</li>");
@@ -5,6 +6,9 @@ function append(text) {
 } 
 function stopWelcoming() {
   clearInterval(intervalId);
+}
+function stop_welcoming_unknown_user() {
+  clearInterval(unk_user_timer_id);
 }
 
 function startWelcoming() {
@@ -17,6 +21,20 @@ function startWelcoming() {
     changed = false;
   } else {
     document.getElementById('text_default').innerText = "Mettiti di fronte a me per iniziare.";
+    changed = true;
+  }
+  }, 5000); // 10000 milliseconds = 10 seconds
+}
+function start_welcoming_unknown_user() {
+  //document.getElementById('text_default').innerText = "";
+
+  var changed = true;
+  unk_user_timer_id = setInterval(function() {
+  if (changed) {
+    document.getElementById('text_default').innerText = "Sconosciuto italiano";
+    changed = false;
+  } else {
+    document.getElementById('text_default').innerText = "Sconosciuto inglese";
     changed = true;
   }
   }, 5000); // 10000 milliseconds = 10 seconds
@@ -45,6 +63,7 @@ function wsrobot_init(ip, port) {
 
         console.log("message received: "+event.data);
         v = event.data.split('_');
+        console.log(v)
         
         if (v[0]=='display') {
           if (v[1]=='text')
@@ -102,9 +121,22 @@ function wsrobot_init(ip, port) {
             console.log('load url: '+p)
             window.location.assign(p)
         }
-        if(event.data.includes('display_text_default_')){
-          startWelcoming()
-        } 
+
+        if(v[0] === "display" && v[1] === "image"){
+          image_name = v[3].split("/")[1].split(".")[0];
+          console.log(image_name)
+          if(image_name === "welcome"){
+            console.log("LBERTO")
+            startWelcoming()
+          } 
+          else if (image_name === "registration"){
+            start_welcoming_unknown_user()
+          }
+          
+        }
+        
+        //else if (event.data === "display_button_touch$Touchscreen" or event.data === )
+        console.log("QUI")
     } 
 
     websocket.onopen = function(){
