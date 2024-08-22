@@ -42,19 +42,18 @@ right_arm_raised = {
 
 default_posture = {
     'HeadYaw': 0.0,
-    'HeadPitch': -0.2,
-    'LShoulderPitch': 1.5,
-    'LShoulderRoll': 0.1,
-    'LElbowYaw': -1.2,
-    'LElbowRoll': -0.5,
-    'LWristYaw': 0.0,
-    'RShoulderPitch': 1.6,
-    'RShoulderRoll': -0.1,
-    'RElbowYaw': 1.2,
-    'RElbowRoll': 0.5,
-    'RWristYaw': 0.0
+    'HeadPitch': -0.21,
+    'LShoulderPitch': 1.55,
+    'LShoulderRoll': 0.13,
+    'LElbowYaw': -1.24,
+    'LElbowRoll': -0.52,
+    'LWristYaw': 0.01,
+    'RShoulderPitch': 1.56,
+    'RShoulderRoll': -0.14,
+    'RElbowYaw': 1.22,
+    'RElbowRoll': 0.52,
+    'RWristYaw': -0.01
 }
-
 
 # --------------------------------- Services --------------------------------- #
 
@@ -94,8 +93,12 @@ class SteadyState(TimeoutState):
     def on_enter(self):
         super(SteadyState, self).on_enter()
         print("[INFO] Entering Steady State")
-        
+
         # Behavior
+        
+        perform_movement(joint_values=default_posture)
+        print('[INFO] Resetting posture')
+
         global hand_picked
         animated_say("Grab my " + hand_picked + " hand and I'll guide you there!")
         print('[INFO] Talking')
@@ -150,6 +153,8 @@ class QuitState(State):
         # sr_service.unsubscribe("pepper_walking_assistant_ASR")
         # word_subscriber.signal.disconnect()
         # touch_subscriber.signal.disconnect()
+
+        print("[INFO] Done")
 
 class HoldHandState(TimeoutState):
 
@@ -233,6 +238,7 @@ def perform_movement(joint_values, speed=1.0, _async=True):
         if joint_limits[joint_name][0] <= joint_value <= joint_limits[joint_name][1]:
             mo_service.setAngles(joint_name, joint_value, speed, _async=_async)
 
+
 def move_to(x, y, theta):
     """
     Move the robot from the current point to the target point specified by x and y
@@ -240,8 +246,10 @@ def move_to(x, y, theta):
     """
     pass
 
+
 def stop_motion():
     pass
+
 
 # --------------------------------- Callbacks -------------------------------- #
 
@@ -364,8 +372,6 @@ def main():
 
     # Program stays at this point until we stop it
     app.run()
-    
-    print("[INFO] Done")
 
 
 if __name__ == "__main__":
