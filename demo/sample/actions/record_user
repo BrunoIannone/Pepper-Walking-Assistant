@@ -8,10 +8,10 @@ TEXT
 <*,*,*,*>: Ciao! Non credo di conoscerti, vuoi usare la modalità vocale o preferisci usare il touchscreen?
 ----
 TTS
-<*,*,*,*>: Ciao! Non credo di conoscerti, vuoi usare la modalità vocale o preferisci usare il touchscreen? Hi! I don't think I know you, would you prefer to use vocal commands or the touchscreen?";
+<*,*,*,*>: Ciao! Non credo di conoscerti, vuoi usare la modalità vocale o preferisci usare il touchscreen? Hi! I don't think I know you, would you prefer to use vocal commands or the touchscreen?
 ----
 ASR 
-<*,*,*,*>:  {'vocal': ['comandi vocali', 'comandi','vocali','vocal commands','vocal','commands'], 'touch': ['touchscreen','touch','screen'], 'failure': ['abort','exit','cancel','abbandona','annulla,'esci','cancella']}
+<*,*,*,*>:  {'vocal': ['comandi vocali','comandi','vocali','vocal commands','vocal','commands'], 'touch': ['touchscreen','touch','screen'], 'failure':['cancel','abort','exit','cancella','esci','annulla','abbandona']}
 ----
 BUTTONS
 vocal

@@ -50,7 +50,7 @@ function startLanguageTimer() {
       document.getElementById('text_default').innerText = "Che lingua preferisci: italiano o inglese?";
       changed = false;
     } else {
-      document.getElementById('text_default').innerText = "Which language do you prefer: italian or english?";
+      document.getElementById('text_default').innerText = "Choose your language: italian or english?";
       changed = true;
     }
   }, 5000); // 5000 milliseconds = 5 seconds
@@ -181,7 +181,7 @@ function wsrobot_init(ip, port) {
         stopWelcomingUnknownUserTimer()
         stopVocalTimer()
 
-        startWelcoming()
+        startWelcomingTimer()
       }
 
       else if (image_name === "registration") {
@@ -197,8 +197,7 @@ function wsrobot_init(ip, port) {
         stopWelcomingTimer()
         stopWelcomingUnknownUserTimer()
         stopVocalTimer()
-        stopLanguageTimer()
-
+        
         startLanguageTimer()
       }
 

@@ -90,17 +90,19 @@ def waitForHuman():
             else:
                 print('*Person gone*')
     im.robot.stopSensorMonitor()
-
+def failure():
+     im.init()
 def recordUser():
     modality = im.ask("record_user",timeout = 999)
+    print("MODALITY" + modality)
     with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write(str(modality).strip())
+        file.write(str(modality).strip())
 
     
 def askLanguage():
     modality = im.ask("ask_language",timeout = 999)
     with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write(str(modality).strip())
+        file.write(str(modality).strip())
 
 
 if __name__ == "__main__":
@@ -134,6 +136,9 @@ if __name__ == "__main__":
                 disability = "deaf"
         else:
             print("[INFO] ROUTINE CANCELED DURING MODALITY SELECTION ")
+            mws.run_interaction(failure)
+            exit(1)
+
             #continue
         
         mws.run_interaction(askLanguage)
@@ -146,14 +151,18 @@ if __name__ == "__main__":
                 language = "it"
         else:
             print("[INFO] ROUTINE CANCELED DURING LANGUAGE SELECTION ")
+            mws.run_interaction(failure)
+            exit(1)
             #continue
 
     if language == "en":
             mws.run_interaction(setProfileEn)
     else:
         mws.run_interaction(setProfileIt)
-
-    pwu_obj.createCustomGreeting("",disability) #Save active username
+    if active_user == "unknown":
+        pwu_obj.createCustomGreeting("",disability) #Save active username
+    else:
+        pwu_obj.createCustomGreeting(active_user,disability) #Save active username
 
     if disability == "blind": # If blind
         mws.run_interaction(greeting)
