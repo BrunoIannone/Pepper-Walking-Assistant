@@ -1,5 +1,9 @@
 IMAGE
-<*, *, *, *>:  img/bear.jpg
+<*, *, *, *>:  img/hello.png
+----
+TEXT
+<*,*,it,*>: Accogliendo l'utente... 
+<*,*,*,*>:  Welcoming the user... 
 ----
 TTS
 <*,*,it,*>: Ciao! Benvenuto 

@@ -14,7 +14,11 @@ class PepperWalkingUtils():
         
             if disability == "blind": #Blind
                 contenuto = """IMAGE
-<*, *, *, *>:  img/bear.jpg
+<*, *, *, *>:  img/hello.png
+----
+TEXT
+<*,*,it,*>: Accogliendo l'utente... {0}
+<*,*,*,*>:  Welcoming the user... {0}
 ----
 TTS
 <*,*,it,*>: Ciao! Benvenuto {0}
@@ -23,7 +27,7 @@ TTS
                 
             else:                     #Deaf
                 contenuto = """IMAGE
-<*, *, *, *>:  img/bear.jpg
+<*, *, *, *>:  img/hello.png
 ----
 TEXT
 <*,*,it,*>: Benvenuto {0}

@@ -1,4 +1,4 @@
-var unk_user_timer_id, intervalId,language_id;
+var unk_user_timer_id, intervalId,language_id,vocal_id;
 // log display function
 function append(text) {
   // document.getElementById("websocket_events").insertAdjacentHTML('beforeend', "<li>" + text + ";</li>");
@@ -11,6 +11,10 @@ function stopWelcoming() {
 function stopLanguage() {
   //intervalId = null
   clearInterval(language_id);
+}
+function stop_vocal() {
+  //intervalId = null
+  clearInterval(vocal_id);
 }
 function stop_welcoming_unknown_user() {
   //unk_user_timer_id = null
@@ -66,6 +70,22 @@ function start_welcoming_unknown_user() {
   }
   }, 5000); // 10000 milliseconds = 10 seconds
   console.log("IN FUNCTION " + unk_user_timer_id)
+}
+function start_vocal() {
+  //document.getElementById('text_default').innerText = "";
+  if(vocal_id){
+    return
+  }
+  var changed = true;
+  vocal_id = setInterval(function() {
+  if (changed) {
+    document.getElementById('vocal').value = "Comandi vocali";
+    changed = false;
+  } else {
+    document.getElementById('vocal').value = "Vocal commands";
+    changed = true;
+  }
+  }, 5000); // 10000 milliseconds = 10 seconds
 }
 // websocket global variable
 var websocket = null;
@@ -157,6 +177,8 @@ function wsrobot_init(ip, port) {
           if(image_name === "welcome"){
             stopLanguage()
             stop_welcoming_unknown_user()
+            stop_vocal()
+
 
             startWelcoming()
 
@@ -167,25 +189,40 @@ function wsrobot_init(ip, port) {
             stopLanguage()
 
             start_welcoming_unknown_user()
+            start_vocal()
+
           }
 
           else if (image_name === "language"){
             stopWelcoming()
             stop_welcoming_unknown_user()
+            stop_vocal()
 
             startLanguage()
           }
-          else if (image_name === "bear"){
+          else if (image_name === "hello"){
             stopWelcoming()
             stop_welcoming_unknown_user()
             stopLanguage()
+            stop_vocal()
+
           }
           else{
             stopWelcoming()
             stop_welcoming_unknown_user()
             stopLanguage()
+            stop_vocal()
+
           }
         }
+        // else if(v[0] === "display" && v[1] === "button"){
+        //   if(v[2].split("$")[0]==="vocal"){
+        //   }
+        //   if(v[2].split("$")[0]==="touch"){
+        //     //start_touch()
+        //     console.log("touch")
+        //   }
+        // }
     } 
 
     websocket.onopen = function(){
