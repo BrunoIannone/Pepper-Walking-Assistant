@@ -48,7 +48,7 @@ def deafAskHelp():
             im.execute('deaf_disagree')
             #print("PERCORSO ROBOT " + os.path.dirname(os.path.realpath(__file__ ))) #/home/robot/src/modim/src/GUI  #/home/robot/src/modim/src/GUI/../../../playground
             with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write("fail")
+                file.write("failure")
             time.sleep(5)
             im.init()
             ## TODO: reset procedure?
@@ -62,6 +62,8 @@ def blindAskHelp():
 
     else:
         im.execute('blind_disagree')
+        with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write("failure")
         time.sleep(5)
         im.init()
         ## TODO: reset procedure?        
@@ -130,6 +132,9 @@ if __name__ == "__main__":
                 disability = "blind"
             else:
                 disability = "deaf"
+        else:
+            print("[INFO] ROUTINE CANCELED DURING MODALITY SELECTION ")
+            #continue
         
         mws.run_interaction(askLanguage)
         status =  pwu_obj.checkStatus()
@@ -139,6 +144,9 @@ if __name__ == "__main__":
                 language = "en"
             else:
                 language = "it"
+        else:
+            print("[INFO] ROUTINE CANCELED DURING LANGUAGE SELECTION ")
+            #continue
 
     if language == "en":
             mws.run_interaction(setProfileEn)

@@ -11,7 +11,7 @@ TTS
 <*,*,*,*>: Ciao! Non credo di conoscerti, vuoi usare la modalità vocale o preferisci usare il touchscreen? Hi! I don't think I know you, would you prefer to use vocal commands or the touchscreen?";
 ----
 ASR 
-<*,*,*,*>:  {'vocal': ['comandi vocali', 'comandi','vocali','vocal commands','vocal','commands'], 'touch': ['touchscreen','touch','screen']}
+<*,*,*,*>:  {'vocal': ['comandi vocali', 'comandi','vocali','vocal commands','vocal','commands'], 'touch': ['touchscreen','touch','screen'], 'failure': ['abort','exit','cancel','abbandona','annulla,'esci','cancella']}
 ----
 BUTTONS
 vocal
@@ -20,5 +20,8 @@ vocal
 touch
 <*,*,it,*>: Touchscreen
 <*,*,*,*>:  Touchscreen
+failure
+<*,*,it,*>: X
+<*,*,*,*>:  X
 ----
 
