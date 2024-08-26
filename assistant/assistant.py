@@ -321,10 +321,23 @@ def on_hand_touch_change(value):
     """
     Callback function triggered when the hand touch event occurs.
     Dispatch the event to the automata.
+
+    Parameters:
+    value (float): The touch sensor value. Values close to 0.0 indicate no touch,
+                   while values significantly greater than 0.0 indicate a touch.
+
+    Note:
+    This function uses a small threshold to determine if the hand is touched or released,
+    avoiding direct floating-point comparisons.
     """
     global hand_picked, automaton
-    print("[INFO] " + hand_picked + " hand touch value changed: " + str(value))
-    if value == 0.0:
+
+    # Define a small threshold for touch detection
+    TOUCH_THRESHOLD = 1e-6
+
+    print(f"[INFO] {hand_picked} hand touch value changed: {value}")
+
+    if math.isclose(value, 0.0, abs_tol=TOUCH_THRESHOLD):
         automaton.on_event('hand_released')
     else:
         automaton.on_event('hand_touched')
