@@ -42,7 +42,7 @@ global current_target
 global current_x, current_y
 global at_goal
 global node_index
-at_goal = True
+at_goal = False
 node_index = 0
 current_x = 0
 current_y = 0
@@ -256,13 +256,13 @@ def move_to(x, y, theta):
             # Rotate to the desired orientation
             mo_service.moveTo(0, 0, theta)
 
-            print(f"[INFO] Moved to position: ({x}, {y}) with orientation {theta}")
+            print("[INFO] Moved to position: ({}, {}) with orientation {}".format(x, y, theta))
         else:
             print("[INFO] Navigation failed or was interrupted")
 
         return success
     except Exception as e:
-        print(f"[ERROR] Failed to move: {e}")
+        print("[ERROR] Failed to move: {}".format(e))
         return False
 
 
@@ -286,9 +286,9 @@ def stop_motion():
         robot_pose = mo_service.getRobotPosition(True)
         current_x, current_y = robot_pose[0], robot_pose[1]
 
-        print(f"[INFO] Motion stopped. Current position: ({current_x}, {current_y})")
+        print("[INFO] Motion stopped. Current position: ({}, {})".format(current_x, current_y))
     except Exception as e:
-        print(f"[ERROR] Failed to stop motion: {e}")
+        print("[ERROR] Failed to stop motion: {}".format(e))
 
 
 # --------------------------------- Callbacks -------------------------------- #
@@ -369,12 +369,13 @@ def main():
     session = app.session
 
     # -------------------------- Initialize the services ------------------------- #
-    global as_service, bm_service, ap_service, mo_service, me_service  #, sr_service
+    global as_service, bm_service, ap_service, mo_service, me_service, na_service  #, sr_service
     as_service = session.service("ALAnimatedSpeech")
     bm_service = session.service("ALBehaviorManager")
     ap_service = session.service("ALAnimationPlayer")
     mo_service = session.service("ALMotion")
     me_service = session.service("ALMemory")
+    na_service = session.service("ALNavigation")
     # sr_service = session.service("ALSpeechRecognition")
 
     # --------------------------- Graph initialization --------------------------- #
