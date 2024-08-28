@@ -14,12 +14,13 @@ from graph.room_mapper import RoomMapper
 
 # --------------------------------- Services --------------------------------- #
 
-global as_service # Animated Speech
-global bm_service # Behavior Manager
-global ap_service # Animation Player
-global mo_service # Motion
-global me_service # Memory
-global to_service # Touch
+global as_service  # Animated Speech
+global bm_service  # Behavior Manager
+global ap_service  # Animation Player
+global mo_service  # Motion
+global me_service  # Memory
+global to_service  # Touch
+global na_service  # Navigation
 # global sr_service # Speech Recognition
 
 # --------------------------------- Variables -------------------------------- #
@@ -32,16 +33,20 @@ hand_picked = 'Left'
 global automaton
 
 # Signals
-global touch_subscriber #, word_subscriber
+global touch_subscriber  #, word_subscriber
 
 # Current and target position
 global coords
 global current_pos
 global current_target
 global current_x, current_y
-global target_x, target_y
+global at_goal
+global node_index
+at_goal = True
+node_index = 0
 current_x = 0
 current_y = 0
+
 
 # ---------------------------------- States ---------------------------------- #
 
@@ -73,8 +78,8 @@ class SteadyState(TimeoutState):
         elif event == 'time_elapsed':
             self.automaton.change_state('quit_state')
 
-class MovingState(State):
 
+class MovingState(State):
     def __init__(self, automaton):
         super(MovingState, self).__init__('moving_state', automaton)
 
@@ -83,17 +88,30 @@ class MovingState(State):
         print('[INFO] Entering Moving State')
 
         # Behavior
-        global target_x, target_y
         global current_x, current_y
-        theta = math.atan2(target_y - current_y, target_x - current_x)
-        move_to(target_x, target_y, theta)
-        print('[INFO] Moving to: ' + str(target_x) + ', ' + str(target_y))
-    
+        global at_goal
+        global node_index
+        while not at_goal:
+            print('[INFO] At goal status: {}'.format(at_goal))
+            print('[INFO] Node index: {}'.format(node_index))
+            print('[INFO] Current target: {}'.format(coords[node_index]))
+            current_target_x, current_target_y = coords[node_index]
+            theta = math.atan2(current_target_y - current_y, current_target_x - current_x)
+            print('[INFO] Current theta: {}'.format(at_goal))
+            print('[INFO] Moving to: ' + str(current_target_x) + ', ' + str(current_target_y))
+            success = move_to(current_target_x, current_target_y, theta)
+            print('[INFO] Success state for {}: {}'.format(node_index, success))
+            if success:
+                node_index += 1
+            if node_index == len(coords):
+                at_goal = True
+
     def on_event(self, event):
         super(MovingState, self).on_event(event)
         if event == 'hand_released':
             stop_motion()
             self.automaton.change_state('ask_state')
+
 
 class QuitState(State):
 
@@ -116,6 +134,7 @@ class QuitState(State):
 
         print("[INFO] Done")
 
+
 class HoldHandState(TimeoutState):
 
     def __init__(self, automaton, timeout=10):
@@ -136,11 +155,12 @@ class HoldHandState(TimeoutState):
         elif event == 'time_elapsed':
             self.automaton.change_state('quit_state')
 
+
 class AskState(TimeoutState):
 
     def __init__(self, automaton, timeout=10):
         super(AskState, self).__init__('ask_state', automaton, timeout=timeout, timeout_event='steady_state')
-    
+
     def on_enter(self):
         super(AskState, self).on_enter()
         print("[INFO] Entering Ask State")
@@ -151,7 +171,7 @@ class AskState(TimeoutState):
 
         # TODO remove user response simulation
         on_word_recognized(None)
-        
+
     def on_event(self, event):
         super(AskState, self).on_event(event)
         if event == 'response_yes':
@@ -163,14 +183,15 @@ class AskState(TimeoutState):
         elif event == 'time_elapsed':
             self.automaton.change_state('quit_state')
 
+
 # ------------------------------ Utility methods ----------------------------- #
 
 def animated_say(sentence):
     """
     Say something while contextually moving the head as you speak 
     """
-    global as_service 
-    configuration = {"bodyLanguageMode":"contextual"}
+    global as_service
+    configuration = {"bodyLanguageMode": "contextual"}
     as_service.say(sentence, configuration)
 
 
@@ -181,8 +202,8 @@ def perform_animation(animation, _async=True):
     """
     global bm_service, ap_service
     behaviors = bm_service.getInstalledBehaviors()
-    
-    if animation in behaviors:    
+
+    if animation in behaviors:
         ap_service.run(animation, _async=_async)
 
 
@@ -201,14 +222,73 @@ def perform_movement(joint_values, speed=1.0, _async=True):
 
 def move_to(x, y, theta):
     """
-    Move the robot from the current point to the target point specified by x and y
-    with the given orientation
+    Move the robot to the specified target position and orientation.
+
+    This function uses ALNavigation.navigateTo for movement to (x, y) coordinates
+    and ALMotion.moveTo for the final orientation adjustment.
+
+    Parameters:
+    x (float): Target X coordinate in meters (in FRAME_WORLD).
+    y (float): Target Y coordinate in meters (in FRAME_WORLD).
+    theta (float): Target orientation in radians (in FRAME_WORLD).
+
+    Returns:
+    bool: True if the robot successfully reached the target, False otherwise.
+
+    Note:
+    - The maximum distance for a single navigateTo call is 3 meters.
+    - This function updates the global current_x and current_y variables.
     """
-    pass
+    global na_service, current_x, current_y
+
+    try:
+        # Calculate relative movement
+        delta_x = x - current_x
+        delta_y = y - current_y
+
+        # Use navigateTo for movement
+        success = na_service.navigateTo(delta_x, delta_y)
+
+        if success:
+            # Update current position if movement was successful
+            current_x, current_y = x, y
+
+            # Rotate to the desired orientation
+            mo_service.moveTo(0, 0, theta)
+
+            print(f"[INFO] Moved to position: ({x}, {y}) with orientation {theta}")
+        else:
+            print("[INFO] Navigation failed or was interrupted")
+
+        return success
+    except Exception as e:
+        print(f"[ERROR] Failed to move: {e}")
+        return False
 
 
 def stop_motion():
-    pass
+    """
+    Stop the robot's motion and update the current location.
+
+    This function uses ALMotion.stopMove() to halt the robot's movement
+    and then updates the global current_x and current_y variables with
+    the robot's final position.
+
+    Note:
+    - This function updates the global current_x and current_y variables.
+    """
+    global mo_service, me_service, current_x, current_y
+    try:
+        # Stop the robot
+        mo_service.stopMove()
+
+        # Get the current position
+        robot_pose = mo_service.getRobotPosition(True)
+        current_x, current_y = robot_pose[0], robot_pose[1]
+
+        print(f"[INFO] Motion stopped. Current position: ({current_x}, {current_y})")
+    except Exception as e:
+        print(f"[ERROR] Failed to stop motion: {e}")
 
 
 # --------------------------------- Callbacks -------------------------------- #
@@ -255,16 +335,16 @@ def on_word_recognized(value):
         print('[USER] Response: no')
         automaton.on_event('response_no')
 
+
 # ----------------------------------- Main ----------------------------------- #
 
 def main():
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--pip", type=str, default=os.environ['PEPPER_IP'],
                         help="Robot IP address.  On robot or Local Naoqi: use '127.0.0.1'.")
     parser.add_argument("--pport", type=int, default=9559,
                         help="Naoqi port number")
-    parser.add_argument("--current_room", type=str, default="A", 
+    parser.add_argument("--current_room", type=str, default="A",
                         help='ID of the room you are currently in')
     parser.add_argument("--target_room", type=str, default="D",
                         help='ID of the room to go to')
@@ -280,16 +360,16 @@ def main():
     # Starting application
     try:
         connection_url = "tcp://" + pip + ":" + str(pport)
-        app = qi.Application(["Memory Read", "--qi-url=" + connection_url ])
+        app = qi.Application(["Memory Read", "--qi-url=" + connection_url])
     except RuntimeError:
-        print ("Can't connect to Naoqi at ip \"" + pip + "\" on port " + str(pport) +".\n"
-               "Please check your script arguments. Run with -h option for help.")
+        print("Can't connect to Naoqi at ip \"" + pip + "\" on port " + str(pport) + ".\n"
+                                                                                     "Please check your script arguments. Run with -h option for help.")
         sys.exit(1)
     app.start()
     session = app.session
 
     # -------------------------- Initialize the services ------------------------- #
-    global as_service, bm_service, ap_service, mo_service, me_service #, sr_service
+    global as_service, bm_service, ap_service, mo_service, me_service  #, sr_service
     as_service = session.service("ALAnimatedSpeech")
     bm_service = session.service("ALBehaviorManager")
     ap_service = session.service("ALAnimationPlayer")
@@ -317,7 +397,7 @@ def main():
     global hand_picked
     first_coords = coords[0]
     first_x, _ = first_coords
-    hand_picked = 'Right' if first_x < 0 else 'Left' 
+    hand_picked = 'Right' if first_x < 0 else 'Left'
     print("[INFO] Selected " + hand_picked.lower() + " hand to raise")
 
     # --------------------------------- Automaton -------------------------------- #
@@ -339,7 +419,7 @@ def main():
     automaton.start('steady_state')
 
     # ------------ Connect the pepper event callbacks to the automaton ----------- #
-    global touch_subscriber #, word_subscriber
+    global touch_subscriber  #, word_subscriber
 
     touch_event = "Hand" + hand_picked + "BackTouched"
     touch_subscriber = me_service.subscriber(touch_event)
