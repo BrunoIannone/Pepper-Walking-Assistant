@@ -97,14 +97,18 @@ class MovingState(State):
             print('[INFO] Current target: {}'.format(coords[node_index]))
             current_target_x, current_target_y = coords[node_index]
             theta = math.atan2(current_target_y - current_y, current_target_x - current_x)
-            print('[INFO] Current theta: {}'.format(at_goal))
+            print('[INFO] Current theta: {}'.format(theta))
             print('[INFO] Moving to: ' + str(current_target_x) + ', ' + str(current_target_y))
             success = move_to(current_target_x, current_target_y, theta)
             print('[INFO] Success state for {}: {}'.format(node_index, success))
             if success:
                 node_index += 1
             if node_index == len(coords):
+                print('[INFO] Success in exit if')
                 at_goal = True
+
+        print('[INFO] Success Exited from while loop')
+
 
     def on_event(self, event):
         super(MovingState, self).on_event(event)
@@ -239,7 +243,7 @@ def move_to(x, y, theta):
     - The maximum distance for a single navigateTo call is 3 meters.
     - This function updates the global current_x and current_y variables.
     """
-    global na_service, current_x, current_y
+    global na_service, current_x, current_y, mo_service
 
     try:
         # Calculate relative movement
@@ -247,14 +251,16 @@ def move_to(x, y, theta):
         delta_y = y - current_y
 
         # Use navigateTo for movement
-        success = na_service.navigateTo(delta_x, delta_y)
+        #success = na_service.navigateTo(delta_x, delta_y)
+        mo_service.moveTo(delta_x, delta_y, theta)
+        success=True
 
         if success:
             # Update current position if movement was successful
             current_x, current_y = x, y
 
             # Rotate to the desired orientation
-            mo_service.moveTo(0, 0, theta)
+            #mo_service.moveTo(0, 0, theta)
 
             print("[INFO] Moved to position: ({}, {}) with orientation {}".format(x, y, theta))
         else:
@@ -350,7 +356,7 @@ def main():
                         help='ID of the room to go to')
     parser.add_argument("--alevel", type=int, default=1,
                         help='Disability level. The higher it is, the more paths are available')
-    parser.add_argument("--wtime", type=int, default=10,
+    parser.add_argument("--wtime", type=int, default=60,
                         help='Number of secodns to wait with the hand raised before canceling the procedure')
 
     args = parser.parse_args()
@@ -375,7 +381,9 @@ def main():
     ap_service = session.service("ALAnimationPlayer")
     mo_service = session.service("ALMotion")
     me_service = session.service("ALMemory")
-    na_service = session.service("ALNavigation")
+
+    print("initialized ALMotion: {}".format(mo_service))
+    #na_service = session.service("ALNavigation")
     # sr_service = session.service("ALSpeechRecognition")
 
     # --------------------------- Graph initialization --------------------------- #
