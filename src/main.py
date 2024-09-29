@@ -358,7 +358,7 @@ def main():
     parser.add_argument("--alevel", type=int, default=1,
                         help='Disability level. The higher it is, the more paths are available')
     parser.add_argument("--wtime", type=int, default=60,
-                        help='Number of secodns to wait with the hand raised before canceling the procedure')
+                        help='Number of seconds to wait with the hand raised before canceling the procedure')
 
     args = parser.parse_args()
     pip = args.pip
