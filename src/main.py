@@ -345,6 +345,7 @@ def on_word_recognized(value):
 # ----------------------------------- Main ----------------------------------- #
 
 def main():
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--pip", type=str, default=os.environ['PEPPER_IP'],
                         help="Robot IP address.  On robot or Local Naoqi: use '127.0.0.1'.")
@@ -387,7 +388,7 @@ def main():
     # sr_service = session.service("ALSpeechRecognition")
 
     # --------------------------- Graph initialization --------------------------- #
-    graph = Graph.static_load('./config/graph.txt')
+    graph = Graph.static_load('src/config/graph.txt')
     distance, path = graph.shortest_path(args.current_room, args.target_room, args.alevel)
     print("[INFO] Current room       : " + str(args.current_room))
     print("[INFO] Target room        : " + str(args.target_room))
@@ -396,7 +397,7 @@ def main():
 
     # Take the coordinates for each node
     global coords
-    room_mapper = RoomMapper.static_load('./config/coords.txt')
+    room_mapper = RoomMapper.static_load('src/config/coords.txt')
     print("[INFO] Rooms coordinates  : ")
     for name, (x, y) in room_mapper.rooms.items():
         print("[INFO] \t" + name + ": ( " + str(x) + ", " + str(y) + ")")
