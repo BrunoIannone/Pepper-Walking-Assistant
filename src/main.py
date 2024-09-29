@@ -4,6 +4,7 @@ import sys
 import time
 import random
 import math
+import json
 import os
 
 from automaton.automaton import State, TimeoutState, FiniteStateAutomaton
@@ -22,6 +23,14 @@ global me_service  # Memory
 global to_service  # Touch
 global na_service  # Navigation
 # global sr_service # Speech Recognition
+
+# ------------------------- User specific parameters ------------------------- #
+global alevel       # Disablity level
+global wtime        # Time to wait before asking if we need to cancel the procedure
+global lang         # Language
+
+# ----------------------------------- Modim ---------------------------------- #
+global mws
 
 # --------------------------------- Variables -------------------------------- #
 
@@ -64,9 +73,16 @@ class SteadyState(TimeoutState):
         perform_movement(joint_values=default_posture)
         print('[INFO] Resetting posture')
 
+        """
+        if alevel == DEAF:
+            # Run modim interaction to show the relative message on tablet
+            pass 
+        elif alevel == BLIND:
+        """
         global hand_picked
-        animated_say("Grab my " + hand_picked + " hand and I'll guide you there!")
-        print('[INFO] Talking: Grab my ' + hand_picked + " hand and I'll guide you there!")
+        sentence_key = "hold_hand_" + hand_picked.lower()
+        animated_say(sentence_key)
+        print('[INFO] Talking: ' + sentence_key)
 
         perform_movement(joint_values=left_arm_raised if hand_picked == 'Left' else right_arm_raised, speed=0.25)
         print("[INFO] Raising " + hand_picked.lower() + " hand")
@@ -149,7 +165,8 @@ class HoldHandState(TimeoutState):
         print('[INFO] Entering Hold Hand State')
 
         # Behavior
-        animated_say("Grab my hand to continue!")
+        sentence_key = "grab_hand_to_continue"
+        animated_say(sentence_key)
         print('[INFO] Talking: Grab my hand to continue!')
 
     def on_event(self, event):
@@ -170,7 +187,8 @@ class AskState(TimeoutState):
         print("[INFO] Entering Ask State")
 
         # Behavior
-        animated_say("Do you want to cancel?")
+        sentence_key = "ask_cancel"
+        animated_say(sentence_key)
         print('[INFO] Talking: Do you want to cancel?')
 
         # TODO remove user response simulation
@@ -190,12 +208,14 @@ class AskState(TimeoutState):
 
 # ------------------------------ Utility methods ----------------------------- #
 
-def animated_say(sentence):
+def animated_say(sentence_key):
     """
-    Say something while contextually moving the head as you speak 
+    Say something while contextually moving the head as you speak.
+    The sentence_key and lang identify a sentence in a particular language. 
     """
-    global as_service
+    global as_service, lang
     configuration = {"bodyLanguageMode": "contextual"}
+    sentence = lang.get(sentence_key, "[Missing translation for " + sentence_key + "]")
     as_service.say(sentence, configuration)
 
 
@@ -296,7 +316,18 @@ def stop_motion():
     except Exception as e:
         print("[ERROR] Failed to stop motion: {}".format(e))
 
-
+def load_language(languages_path, language_code):
+    """
+    Load the translation file based on the selected language.
+    """
+    try:
+        file_path = os.path.join(languages_path, language_code + '.json')
+        with open(file_path, 'r') as file:
+            return json.load(file)
+    except:
+        print("Error: Language file for " + file_path + " not found.")
+        return {}
+    
 # --------------------------------- Callbacks -------------------------------- #
 
 def on_hand_touch_change(value):
@@ -346,6 +377,7 @@ def on_word_recognized(value):
 
 def main():
 
+    # ----------------------------- Argument parsing ----------------------------- #
     parser = argparse.ArgumentParser()
     parser.add_argument("--pip", type=str, default=os.environ['PEPPER_IP'],
                         help="Robot IP address.  On robot or Local Naoqi: use '127.0.0.1'.")
@@ -359,6 +391,8 @@ def main():
                         help='Disability level. The higher it is, the more paths are available')
     parser.add_argument("--wtime", type=int, default=60,
                         help='Number of seconds to wait with the hand raised before canceling the procedure')
+    parser.add_argument("--lang", type=str, default='en',
+                        help='Language')
 
     args = parser.parse_args()
     pip = args.pip
@@ -375,6 +409,14 @@ def main():
     app.start()
     session = app.session
 
+    # ------------------------- User specific parameters ------------------------- #
+    global alevel, wtime, lang
+    alevel = args.alevel
+    wtime = args.wtime
+
+    lang = load_language('src/config/languages', args.lang)
+    print("[INFO] Selected vocabulary: " + args.lang)
+
     # -------------------------- Initialize the services ------------------------- #
     global as_service, bm_service, ap_service, mo_service, me_service, na_service  #, sr_service
     as_service = session.service("ALAnimatedSpeech")
@@ -383,9 +425,13 @@ def main():
     mo_service = session.service("ALMotion")
     me_service = session.service("ALMemory")
 
-    print("initialized ALMotion: {}".format(mo_service))
     #na_service = session.service("ALNavigation")
     # sr_service = session.service("ALSpeechRecognition")
+
+    # ---------------------------- Start modim client ---------------------------- #
+    global mws
+    # mws = ModimWSClient()
+    # mws.setDemoPathAuto(__file__) # Better leave this here
 
     # --------------------------- Graph initialization --------------------------- #
     graph = Graph.static_load('src/config/graph.txt')
