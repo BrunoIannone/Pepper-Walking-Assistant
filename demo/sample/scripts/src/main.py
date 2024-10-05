@@ -30,7 +30,7 @@ global wtime        # Time to wait before asking if we need to cancel the proced
 global lang         # Language
 
 # ----------------------------------- Modim ---------------------------------- #
-global mws
+# global mws
 
 # --------------------------------- Variables -------------------------------- #
 
@@ -375,26 +375,11 @@ def on_word_recognized(value):
 
 # ----------------------------------- Main ----------------------------------- #
 
-def main():
+def greetings():
+    im.execute('custom_greeting')
 
-    # ----------------------------- Argument parsing ----------------------------- #
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--pip", type=str, default=os.environ['PEPPER_IP'],
-                        help="Robot IP address.  On robot or Local Naoqi: use '127.0.0.1'.")
-    parser.add_argument("--pport", type=int, default=9559,
-                        help="Naoqi port number")
-    parser.add_argument("--current_room", type=str, default="A",
-                        help='ID of the room you are currently in')
-    parser.add_argument("--target_room", type=str, default="D",
-                        help='ID of the room to go to')
-    parser.add_argument("--alevel", type=int, default=1,
-                        help='Disability level. The higher it is, the more paths are available')
-    parser.add_argument("--wtime", type=int, default=60,
-                        help='Number of seconds to wait with the hand raised before canceling the procedure')
-    parser.add_argument("--lang", type=str, default='en',
-                        help='Language')
+def allah(args, mws):
 
-    args = parser.parse_args()
     pip = args.pip
     pport = args.pport
 
@@ -429,9 +414,10 @@ def main():
     # sr_service = session.service("ALSpeechRecognition")
 
     # ---------------------------- Start modim client ---------------------------- #
-    global mws
+    # global mws
     # mws = ModimWSClient()
     # mws.setDemoPathAuto(__file__) # Better leave this here
+    mws.run_interaction(greetings)
 
     # --------------------------- Graph initialization --------------------------- #
     graph = Graph.static_load('src/config/graph.txt')
@@ -496,4 +482,24 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+
+    # ----------------------------- Argument parsing ----------------------------- #
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pip", type=str, default=os.environ['PEPPER_IP'],
+                        help="Robot IP address.  On robot or Local Naoqi: use '127.0.0.1'.")
+    parser.add_argument("--pport", type=int, default=9559,
+                        help="Naoqi port number")
+    parser.add_argument("--current_room", type=str, default="A",
+                        help='ID of the room you are currently in')
+    parser.add_argument("--target_room", type=str, default="D",
+                        help='ID of the room to go to')
+    parser.add_argument("--alevel", type=int, default=1,
+                        help='Disability level. The higher it is, the more paths are available')
+    parser.add_argument("--wtime", type=int, default=60,
+                        help='Number of seconds to wait with the hand raised before canceling the procedure')
+    parser.add_argument("--lang", type=str, default='en',
+                        help='Language')
+
+    args = parser.parse_args()
+
+    allah(args, None)

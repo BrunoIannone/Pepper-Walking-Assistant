@@ -3,6 +3,8 @@ import time
 import os
 import random
 import subprocess
+from src.main import allah
+# from src import main
 
 
 try:
@@ -18,7 +20,6 @@ from ws_client import *
 import pepper_walking_utils 
 from pepper_walking_utils import *
 import pickle
-import interactions
 
 def setProfileEn():
     im.setProfile(['*', '*', '*', '*'])
@@ -107,6 +108,25 @@ def askLanguage():
 
 if __name__ == "__main__":
 
+        # ----------------------------- Argument parsing ----------------------------- #
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pip", type=str, default=os.environ['PEPPER_IP'],
+                        help="Robot IP address.  On robot or Local Naoqi: use '127.0.0.1'.")
+    parser.add_argument("--pport", type=int, default=9559,
+                        help="Naoqi port number")
+    parser.add_argument("--current_room", type=str, default="A",
+                        help='ID of the room you are currently in')
+    parser.add_argument("--target_room", type=str, default="D",
+                        help='ID of the room to go to')
+    parser.add_argument("--alevel", type=int, default=1,
+                        help='Disability level. The higher it is, the more paths are available')
+    parser.add_argument("--wtime", type=int, default=60,
+                        help='Number of seconds to wait with the hand raised before canceling the procedure')
+    parser.add_argument("--lang", type=str, default='en',
+                        help='Language')
+
+    args = parser.parse_args()
+
     user_db = {"Bruno":["deaf","en"]} #"unknown":[]}#,"Bruno":["deaf","en"]}#, "Carla": "blind"} # Dictionary that simulates users' database
    
     mws = ModimWSClient()
@@ -173,6 +193,7 @@ if __name__ == "__main__":
         if(status != "failure"):
             print("[BLIND] launching assistant.py")
             #subprocess.call(['python', '/home/robot/playground/pepper_walking_assistant/assistant/assistant.py'])
+            allah(args, mws)
 
         else:
             print("[BLIND] aborted")
@@ -188,7 +209,8 @@ if __name__ == "__main__":
         if(status != "failure"):
             print("[DEAF] launching assistant.py")
             dest = pwu_obj.checkStatus()
-            subprocess.call(['python', '/home/robot/playground/pepper_walking_assistant/demo/sample/scripts/src/main.py', '--target_room', dest ])
+            # subprocess.call(['python', '/home/robot/playground/pepper_walking_assistant/demo/sample/scripts/src/main.py', '--target_room', dest ])
+            allah(args, mws)
 
         else:
             print("[DEAF] aborted")
