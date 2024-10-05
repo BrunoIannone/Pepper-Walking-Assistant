@@ -2,10 +2,9 @@ IMAGE
 <*, *, *, *>:  img/hello.png
 ----
 TEXT
-<*,*,it,*>: Accogliendo l'utente... 
-<*,*,*,*>:  Welcoming the user... 
+<*,*,it,*>: Benvenuto Bruno
+<*,*,*,*>:  Welcome Bruno
 ----
-TTS
-<*,*,it,*>: Ciao! Benvenuto 
-<*,*,*,*>:  Hello! Welcome 
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Hey_1
 ----

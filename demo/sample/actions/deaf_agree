@@ -9,13 +9,13 @@ TEXT
 <*,*,*,*>:  Choose your destination!
 ----
 BUTTONS
-dest1
+A
 <*,*,it,*>: destinazione1
 <*,*,*,*>:  destination1
-dest2
+B
 <*,*,it,*>: destinazione2
 <*,*,*,*>:  destination2
-dest3
+C
 <*,*,it,*>: destinazione3
 <*,*,*,*>:  destination3
 ----

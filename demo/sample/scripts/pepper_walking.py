@@ -107,7 +107,7 @@ def askLanguage():
 
 if __name__ == "__main__":
 
-    user_db = {"unknown":[]} #"unknown":[]}#,Bruno":["deaf","en"]}#, "Carla": "blind"} # Dictionary that simulates users' database
+    user_db = {"Bruno":["deaf","en"]} #"unknown":[]}#,"Bruno":["deaf","en"]}#, "Carla": "blind"} # Dictionary that simulates users' database
    
     mws = ModimWSClient()
     mws.setDemoPathAuto(__file__)
@@ -187,7 +187,8 @@ if __name__ == "__main__":
         status =  pwu_obj.checkStatus()
         if(status != "failure"):
             print("[DEAF] launching assistant.py")
-            #subprocess.call(['python', '/home/robot/playground/pepper_walking_assistant/assistant/assistant.py'])
+            dest = pwu_obj.checkStatus()
+            subprocess.call(['python', '/home/robot/playground/pepper_walking_assistant/demo/sample/scripts/src/main.py', '--target_room', dest ])
 
         else:
             print("[DEAF] aborted")
