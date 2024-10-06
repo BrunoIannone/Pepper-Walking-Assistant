@@ -77,10 +77,10 @@ class SteadyState(TimeoutState):
         if True:
             # Run modim interaction to show the relative message on tablet
             if hand_picked == 'Left':
-                global_mws.run_interaction(leftDeafWalkHandle)
+                global_mws.run_interaction(left_deaf_walk_handle)
             else:
                 # global_mws.run_interaction(rightDeafWalkHandle)
-                global_mws.run_interaction(leftDeafWalkHandle)
+                global_mws.run_interaction(left_deaf_walk_handle)
         # elif alevel == 1:
         else:
             if hand_picked == 'Left':
@@ -212,7 +212,7 @@ class AskState(TimeoutState):
         
         # if alevel == 0:
         if True:
-            global_mws.run_interaction(deafCancel)
+            global_mws.run_interaction(deaf_cancel)
         # elif alevel == 1:
         else:
             global_mws.run_interaction(blindCancel)

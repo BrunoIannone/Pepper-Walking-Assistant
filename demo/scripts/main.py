@@ -123,17 +123,17 @@ if __name__ == "__main__":
 
     # Set the language profile
     if language == "en":
-            mws.run_interaction(actionManager.setProfileEn)
+            mws.run_interaction(actionManager.set_profile_en)
     elif language == "it":
-        mws.run_interaction(actionManager.setProfileIt)
+        mws.run_interaction(actionManager.set_profile_it)
     else:
         raise ValueError("Invalid language: " + language)
 
     # Create custom greeting action file
     if newUser:
-        actionManager.createCustomGreeting("", alevel)  # Create a greeting action file for the new user
+        actionManager.create_custom_greeting("", alevel)  # Create a greeting action file for the new user
     else:
-        actionManager.createCustomGreeting(active_user.username, alevel)  # Create a greeting action file for the user 
+        actionManager.create_custom_greeting(active_user.username, alevel)  # Create a greeting action file for the user
 
     # Ask for help
     if alevel == 0:  # Blindness

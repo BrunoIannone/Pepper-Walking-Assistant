@@ -26,6 +26,7 @@ class Node:
     def __lt__(self, other):
         return self.value < other.value
 
+
 class Graph:
 
     def __init__(self, directed=False):
@@ -62,7 +63,8 @@ class Graph:
         with open(path, 'w') as file:
             for node, neighbors in self.adjacency_list.items():
                 for neighbor, weight, accessibility_weight in neighbors:
-                    file.write(str(node) + " " + str(neighbor) + " " + str(weight) + " " + str(accessibility_weight) + "\n")
+                    file.write(
+                        str(node) + " " + str(neighbor) + " " + str(weight) + " " + str(accessibility_weight) + "\n")
 
     def shortest_path(self, start, end, accessibility_level):
         return self._astar_shortest_path(start, end, accessibility_level)
@@ -126,7 +128,6 @@ class Graph:
 
 
 if __name__ == '__main__':
-
     a = Node('A')
     b = Node('B')
     c = Node('C')

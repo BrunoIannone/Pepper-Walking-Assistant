@@ -1,5 +1,6 @@
 import os
 
+
 class ActionManager:
 
     def __init__(self, outcome_path="/home/robot/playground/outcome.txt"):
@@ -10,15 +11,15 @@ class ActionManager:
 
         self.outcome_path = outcome_path
 
-    def recognizedUser(self):
+    def recognized_user(self):
         return True
- 
-    def getActionsPath(self):
-        return os.path.join(os.path.dirname(os.path.realpath(__file__)),"../../../actions/")
-    
-    def createCustomGreeting(self, user_name, disability):
-        with open(os.path.join(self.getActionsPath(), "custom_greeting"), "w") as file:
-        
+
+    def get_actions_path(self):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../../actions/")
+
+    def create_custom_greeting(self, user_name, disability):
+        with open(os.path.join(self.get_actions_path(), "custom_greeting"), "w") as file:
+
             if disability == 0:  # Blind
                 contenuto = """IMAGE
                     <*, *, *, *>:  img/hello.png
@@ -31,7 +32,7 @@ class ActionManager:
                     <*,*,it,*>: Ciao! Benvenuto {0}
                     <*,*,*,*>:  Hello! Welcome {0}
                     ----""".format(user_name)
-                
+
             else:  # Deaf
                 contenuto = """IMAGE
                     <*, *, *, *>:  img/hello.png
@@ -43,10 +44,10 @@ class ActionManager:
                     GESTURE
                     <*,*,*,*>: animations/Stand/Gestures/Hey_1
                     ----""".format((user_name))
-                
+
             file.write(contenuto)
 
-    def checkStatus(self):
+    def check_status(self):
         status = None
         with open(self.outcome_path, "r") as file:
             status = file.readline().strip()
@@ -56,15 +57,13 @@ class ActionManager:
         """
         Generate the simple actions for which the robot does not expect a complex interaction with the user
         """
-        
-        # actions_path = self.getActionsPath()
+
         if actions_path is None:
-            actions_path = os.path.join(self.getActionsPath(), 'robotOnly')
+            actions_path = os.path.join(self.get_actions_path(), 'robotOnly')
 
         for file_name in os.listdir(actions_path):
 
             if os.path.isfile(os.path.join(actions_path, file_name)):
-
                 # Generate the function name
                 action_tokens = file_name.replace("_", " ").split()
                 function_name = ''.join(action_tokens)
@@ -82,55 +81,55 @@ class ActionManager:
 
     # ------------------------------ Complex actions ----------------------------- #
 
-    def setProfileEn(self):
+    def set_profile_en(self):
         im.setProfile(['*', '*', '*', '*'])
 
-    def setProfileIt(self):
+    def set_profile_it(self):
         #im.init()
         im.setProfile(['*', '*', 'it', '*'])
 
-    def customGreeting(self):
+    def custom_greeting(self):
         im.execute("custom_greeting")
 
-    def deafAskHelp(self):
-        q = im.ask("deaf_ask_help", timeout = 999)
+    def deaf_ask_help(self):
+        q = im.ask("deaf_ask_help", timeout=999)
         print("RISPOSTA " + q)
-        if (q!='timeout'):
+        if (q != 'timeout'):
             if q == 'agree':
-                required_dest = im.ask('deaf_agree',timeout = 999)
+                required_dest = im.ask('deaf_agree', timeout=999)
 
-                with open(self.outcome_path,"w") as file:
+                with open(self.outcome_path, "w") as file:
                     file.write(required_dest)
 
                 #subprocess.run(['python', '/home/robot/playground/pepper_walking_assistant/assistant/assistant.py'])
-            
+
                 ## TODO: Andare in required_dest ( goto(required_dest) )
 
             else:
                 im.execute('deaf_disagree')
                 #print("PERCORSO ROBOT " + os.path.dirname(os.path.realpath(__file__ ))) #/home/robot/src/modim/src/GUI  #/home/robot/src/modim/src/GUI/../../../playground
-                with open(self.outcome_path,"w") as file:
+                with open(self.outcome_path, "w") as file:
                     file.write("failure")
                 time.sleep(5)
                 im.init()
                 ## TODO: reset procedure?
-        
-    def blindAskHelp(self):
-        q = im.ask('blind_ask_help',timeout = 999)
-        if(q == 'agree'):
-            required_dest = im.ask('blind_agree',timeout = 999)
-            with open(self.outcome_path,"w") as file:
+
+    def blind_ask_help(self):
+        q = im.ask('blind_ask_help', timeout=999)
+        if (q == 'agree'):
+            required_dest = im.ask('blind_agree', timeout=999)
+            with open(self.outcome_path, "w") as file:
                 file.write(required_dest)
 
         else:
             im.execute('blind_disagree')
-            with open(self.outcome_path,"w") as file:
-                    file.write("failure")
+            with open(self.outcome_path, "w") as file:
+                file.write("failure")
             time.sleep(5)
             im.init()
             ## TODO: reset procedure?        
-        
-    def waitForHuman(self):
+
+    def wait_for_human(self):
         stop_detection = False
         is_human_detected = False
 
@@ -138,9 +137,9 @@ class ActionManager:
         im.robot.startSensorMonitor()
         while not stop_detection:
             while not is_human_detected:
-                p = im.robot.sensorvalue() #p is the array with data of all the sensors
+                p = im.robot.sensorvalue()  #p is the array with data of all the sensors
                 print("SENSOR VALUE " + p)
-                is_human_detected = p[1] > 0.0 and p[1] < 1.0 #p[1] is the Front sonar
+                is_human_detected = p[1] > 0.0 and p[1] < 1.0  #p[1] is the Front sonar
             if is_human_detected:
                 print('*Person detected*')
                 time.sleep(2)
@@ -156,15 +155,13 @@ class ActionManager:
     def failure(self):
         im.init()
 
-    def recordUser(self):
-        modality = im.ask("record_user",timeout = 999)
+    def record_user(self):
+        modality = im.ask("record_user", timeout=999)
         print("MODALITY" + modality)
-        with open(self.outcome_path,"w") as file:
-            file.write(str(modality).strip())
-        
-    def askLanguage(self):
-        modality = im.ask("ask_language",timeout = 999)
-        with open(self.outcome_path,"w") as file:
+        with open(self.outcome_path, "w") as file:
             file.write(str(modality).strip())
 
-
+    def ask_language(self):
+        modality = im.ask("ask_language", timeout=999)
+        with open(self.outcome_path, "w") as file:
+            file.write(str(modality).strip())

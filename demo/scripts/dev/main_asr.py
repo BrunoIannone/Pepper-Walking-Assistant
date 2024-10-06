@@ -8,24 +8,7 @@ import os
 
 from pepper_walking_assistant.assistant.automaton import State, TimeoutState, FiniteStateAutomaton
 
-
 # ------------------------- Joint values for postures ------------------------ #
-
-joint_limits = {
-    'HeadYaw': (-2.0857, 2.0857),
-    'HeadPitch': (-0.7068, 0.6371),
-    'LShoulderPitch': (-2.0857, 2.0857),
-    'LShoulderRoll': (0.0087, 1.5620),
-    'LElbowYaw': (-2.0857, 2.0857),
-    'LElbowRoll': (-1.5620, -0.0087),
-    'LWristYaw': (-1.8239, 1.8239),
-    'RShoulderPitch': (-2.0857, 2.0857),
-    'RShoulderRoll': (-1.5620, -0.0087),
-    'RElbowYaw': (-2.0857, 2.0857),
-    'RElbowRoll': (0.0087,1.5620),
-    'RWristYaw': (-1.8239, 1.8239)
-}
-
 left_arm_raised = {
     'LShoulderRoll': 1.5620,
     'LElbowYaw': -1.5,
@@ -55,16 +38,15 @@ default_posture = {
     'RWristYaw': 0.0
 }
 
-
 # --------------------------------- Services --------------------------------- #
 
-global as_service # Animated Speech
-global bm_service # Behavior Manager
-global ap_service # Animation Player
-global mo_service # Motion
-global me_service # Memory
-global to_service # Touch
-global sr_service # Speech Recognition
+global as_service  # Animated Speech
+global bm_service  # Behavior Manager
+global ap_service  # Animation Player
+global mo_service  # Motion
+global me_service  # Memory
+global to_service  # Touch
+global sr_service  # Speech Recognition
 
 # --------------------------------- Variables -------------------------------- #
 
@@ -90,6 +72,7 @@ global target_x, target_y
 current_x = 0
 current_y = 0
 
+
 # ---------------------------------- States ---------------------------------- #
 
 class SteadyState(State):
@@ -100,7 +83,7 @@ class SteadyState(State):
     def on_enter(self):
         super().on_enter()
         print("[INFO] Entering Steady State")
-        
+
         # Behavior
         global hand_picked
         perform_movement(joint_values=left_arm_raised if hand_picked == 'Left' else right_arm_raised, speed=0.25)
@@ -110,6 +93,7 @@ class SteadyState(State):
         super().on_event(event)
         if event == 'hand_touched':
             self.automaton.change_state('moving_state')
+
 
 class MovingState(State):
 
@@ -125,12 +109,13 @@ class MovingState(State):
         global current_x, current_y
         theta = math.atan(target_y - current_y, target_x - current_x)
         move_to(target_x, target_y, theta)
-    
+
     def on_event(self, event):
         super().on_event(event)
         if event == 'hand_released':
             stop_motion()
             self.automaton.change_state('ask_state')
+
 
 class QuitState(State):
 
@@ -140,7 +125,7 @@ class QuitState(State):
     def on_enter(self):
         super().on_enter()
         print('[INFO] Entering Quit State')
-    
+
     def on_event(self, event):
         super().on_event(event)
 
@@ -149,6 +134,7 @@ class QuitState(State):
         sr_service.unsubscribe("pepper_walking_assistant_ASR")
         word_subscriber.signal.disconnect()
         touch_subscriber.signal.disconnect()
+
 
 class HoldHandState(TimeoutState):
 
@@ -161,24 +147,25 @@ class HoldHandState(TimeoutState):
 
         # Behavior
         animated_say("Grab my hand to continue!")
-    
+
     def on_event(self, event):
         super().on_event(event)
         if event == 'hand_touched':
             self.automaton.change_state('moving_state')
 
+
 class AskState(TimeoutState):
 
     def __init__(self, automaton):
         super().__init__('ask_state', automaton, timeout=20, timeout_event='steady_state')
-    
+
     def on_enter(self):
         super().on_enter()
         print("[Automaton] Entering Ask State")
 
         # Behavior
         animated_say("Do you want to cancel?")
-    
+
     def on_event(self, event):
         super().on_event(event)
         if event == 'response_yes':
@@ -188,14 +175,15 @@ class AskState(TimeoutState):
         elif event == 'hand_touched':
             self.automaton.change_state['moving_state']
 
+
 # ------------------------------ Utility methods ----------------------------- #
 
 def animated_say(sentence):
     """
     Say something while contextually moving the head as you speak 
     """
-    global as_service 
-    configuration = {"bodyLanguageMode":"contextual"}
+    global as_service
+    configuration = {"bodyLanguageMode": "contextual"}
     as_service.say(sentence, configuration)
 
 
@@ -206,8 +194,8 @@ def perform_animation(animation, _async=True):
     """
     global bm_service, ap_service
     behaviors = bm_service.getInstalledBehaviors()
-    
-    if animation in behaviors:    
+
+    if animation in behaviors:
         ap_service.run(animation, _async=_async)
 
 
@@ -223,6 +211,7 @@ def perform_movement(joint_values, speed=1.0, _async=True):
         if joint_limits[joint_name][0] <= joint_value <= joint_limits[joint_name][1]:
             mo_service.setAngles(joint_name, joint_value, speed, _async=_async)
 
+
 def move_to(x, y, theta):
     """
     Move the robot from the current point to the target point specified by x and y
@@ -230,11 +219,12 @@ def move_to(x, y, theta):
     """
     pass
 
+
 def stop_motion():
     pass
 
-def procedure(target_coords):
 
+def procedure(target_coords):
     """
     global hand_picked
 
@@ -269,6 +259,7 @@ def procedure(target_coords):
 
     pass
 
+
 # --------------------------------- Callbacks -------------------------------- #
 
 def on_hand_touch_change(value):
@@ -291,7 +282,7 @@ def on_word_recognized(value):
     """
     recognized_word = value[0] if value else ""
     print("[INFO] Recognized word: ", recognized_word)
-    
+
     global automaton
     if recognized_word == "yes":
         automaton.on_event('response_yes')
@@ -309,7 +300,7 @@ def main():
                         help="Robot IP address.  On robot or Local Naoqi: use '127.0.0.1'.")
     parser.add_argument("--pport", type=int, default=9559,
                         help="Naoqi port number")
-    parser.add_argument("--coords", type=float, nargs=2, metavar=('X', 'Y'), default=[1.0, 1.0], 
+    parser.add_argument("--coords", type=float, nargs=2, metavar=('X', 'Y'), default=[1.0, 1.0],
                         help="Target coordinates")
     args = parser.parse_args()
     pip = args.pip
@@ -318,10 +309,10 @@ def main():
     # Starting application
     try:
         connection_url = "tcp://" + pip + ":" + str(pport)
-        app = qi.Application(["Memory Read", "--qi-url=" + connection_url ])
+        app = qi.Application(["Memory Read", "--qi-url=" + connection_url])
     except RuntimeError:
-        print ("Can't connect to Naoqi at ip \"" + pip + "\" on port " + str(pport) +".\n"
-               "Please check your script arguments. Run with -h option for help.")
+        print ("Can't connect to Naoqi at ip \"" + pip + "\" on port " + str(pport) + ".\n"
+                                                                                      "Please check your script arguments. Run with -h option for help.")
         sys.exit(1)
     app.start()
     session = app.session
@@ -369,10 +360,11 @@ def main():
 
     sr_service.setLanguage("English")
     sr_service.setVocabulary(["yes", "no"], False)
-    sr_service.subscribe("pepper_walking_assistant_ASR")  # Start the speech recognition engine with user pepper_walking_assistant_ASR
-    word_subscriber = me_service.subscriber("WordRecognized") # Subscribe to event WordRecognized
+    sr_service.subscribe(
+        "pepper_walking_assistant_ASR")  # Start the speech recognition engine with user pepper_walking_assistant_ASR
+    word_subscriber = me_service.subscriber("WordRecognized")  # Subscribe to event WordRecognized
     word_signal = word_subscriber.signal.connect(on_word_recognized)
-    
+
     # Program stays at this point until we stop it
     app.run()
 

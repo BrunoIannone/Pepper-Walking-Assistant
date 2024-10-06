@@ -102,3 +102,12 @@ During the simulation we can interact with the robot with the `touch_sim` script
 # Example: keep touching the left hand for 20 seconds
 python2 src/touch_sim.py --sensor LHand --duration 20
 ```
+
+
+## TODO
+- Remove main_asr?
+- How to check status in main & action_manager
+- check todo on action_manager
+
+
+
