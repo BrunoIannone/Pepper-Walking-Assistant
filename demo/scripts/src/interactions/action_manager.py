@@ -14,7 +14,7 @@ class ActionManager:
         return True
  
     def getActionsPath(self):
-        return os.path.join(os.path.dirname(os.path.realpath(__file__ )),"../../../actions/")
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)),"../../../actions/")
     
     def createCustomGreeting(self, user_name, disability):
         with open(os.path.join(self.getActionsPath(), "custom_greeting"), "w") as file:
@@ -67,10 +67,6 @@ class ActionManager:
 
                 # Generate the function name
                 action_tokens = file_name.replace("_", " ").split()
-
-                # Capitalize the words (camel case) leaving the first unchanged
-                action_tokens = [action_tokens[0]] + [token.capitalize() for token in action_tokens[1:]]
-
                 function_name = ''.join(action_tokens)
 
                 # Define the function dynamically

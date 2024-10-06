@@ -26,7 +26,7 @@ class UserManager:
         return self.users
 
     def get_random_user(self):
-        return random.choice(users)
+        return random.choice(self.users)
 
     def find_user_by_username(self, username):
         for user in self.users:

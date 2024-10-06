@@ -13,4 +13,4 @@ class User:
     @classmethod
     def from_string(cls, user_string):
         userid, username, alevel, lang = user_string.strip().split(',')
-        return cls(userid, username, alevel, lang)
+        return cls(int(userid), username.strip(), int(alevel), lang.strip())

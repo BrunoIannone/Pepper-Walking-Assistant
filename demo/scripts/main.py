@@ -19,6 +19,13 @@ from src.users.user_manager import UserManager
 from src.guide_me import guide_me
 
 
+def path_utils(relative_path):
+    """
+    Returns the path of the required file relative to the current one
+    """
+    return os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), relative_path))
+
+
 if __name__ == "__main__":
 
         # ----------------------------- Argument parsing ----------------------------- #
@@ -51,21 +58,20 @@ if __name__ == "__main__":
     print("[INFO] Working directory: " + os.getcwd())
 
     actionManager = ActionManager()
-    actions_database_path = os.path.abspath('../actions/robotOnly')
+    actions_database_path = actionManager.getActionsPath()
     print("[INFO] Generating actions from folder: " + actions_database_path)
 
     print("[INFO] Generated actions:")
     for action in actionManager.generated_actions:
         print("[INFO] \t" + action)
 
-    userManager = UserManager()
-    users_database_path = os.path.abspath('../static/users/users.txt')
+    users_database_path = path_utils('../static/users/users.txt')
     print("[INFO] Restoring users from: " + users_database_path)
-    userManager.load('../static/users/users.txt')
+    userManager = UserManager.load(users_database_path)
     
     print("[INFO] Users database:")
     for user in userManager.users:
-        print("[INFO] \t" + user.username + " [" + user.alevel + "]")
+        print("[INFO] \t" + user.username + " [" + str(user.alevel) + "]")
 
     #while True:
     #    mws.run_interaction(waitForHuman) # Wait for human to position
@@ -79,7 +85,7 @@ if __name__ == "__main__":
         active_user = userManager.get_random_user()  # Debug, get random user
     else:
         active_user = userManager.find_user_by_id(args.uid)
-    print('[INFO] Active user: ', active_user)
+    print('[INFO] Active user: ' + active_user.username)
 
     language = active_user.lang
     alevel = active_user.alevel
@@ -129,8 +135,6 @@ if __name__ == "__main__":
     else:
         actionManager.createCustomGreeting(active_user.username, alevel)  # Create a greeting action file for the user 
 
-    """
-
     # Ask for help
     if alevel == 0:  # Blindness
 
@@ -141,7 +145,7 @@ if __name__ == "__main__":
         status =  actionManager.checkStatus()
         if(status != "failure"):
             print("[INFO] Blind help procedure starting")
-            guide_me(args, mws)
+            # guide_me(args, mws)
         else:
             print("[INFO] Blind help procedure aborted")
             time.sleep(10)
@@ -159,10 +163,8 @@ if __name__ == "__main__":
             dest = actionManager.checkStatus()
             # TODO take the destination from the output file 
             # subprocess.call(['python', '/home/robot/playground/pepper_walking_assistant/demo/sample/scripts/src/main.py', '--target_room', dest ])
-            guide_me(args, mws)
+            # guide_me(args, mws)
         else:
             print("[INFO] Deaf help procedure aborted")
             time.sleep(10)
             #continue
-
-    """
