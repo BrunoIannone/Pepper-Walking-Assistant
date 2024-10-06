@@ -1,33 +1,10 @@
 import matplotlib.pyplot as plt
 import heapq
 
-
-class Node:
-
-    def __init__(self, value):
-        self.value = value
-
-    def __eq__(self, other):
-        if isinstance(other, Node):
-            return self.value == other.value
-        elif isinstance(other, str):
-            return self.value == other
-        raise ValueError("Unable to convert from " + str(type(other)) + " to " + str(type(self)))
-
-    def __hash__(self):
-        return hash(self.value)
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __lt__(self, other):
-        return self.value < other.value
+from demo.scripts.src.map.node import Node
 
 
-class Graph:
+class Graph(object):
 
     def __init__(self, directed=False):
         self.adjacency_list = {}
@@ -39,6 +16,20 @@ class Graph:
             self.adjacency_list[node1] = []
         if node2 not in self.adjacency_list:
             self.adjacency_list[node2] = []
+
+        self.adjacency_list[node1].append((node2, weight, accessibility_weight))
+        if not self.directed:
+            self.adjacency_list[node2].append((node1, weight, accessibility_weight))
+
+    def add_node(self, node):
+        if node not in self.adjacency_list:
+            self.adjacency_list[node] = []
+
+    def add_edge(self, node1, node2, weight=1, accessibility_weight=1):
+        if node1 not in self.adjacency_list:
+            self.add_node(node1)
+        if node2 not in self.adjacency_list:
+            self.add_node(node2)
 
         self.adjacency_list[node1].append((node2, weight, accessibility_weight))
         if not self.directed:
@@ -103,29 +94,6 @@ class Graph:
         path.reverse()
         return path
 
-    def draw(self, positions):
-        plt.figure(figsize=(8, 6))
-
-        # Draw edges
-        for node, neighbors in self.adjacency_list.items():
-            for neighbor, weight, accessibility_weight in neighbors:
-                plt.plot([positions[node][0], positions[neighbor][0]],
-                         [positions[node][1], positions[neighbor][1]], 'k-')
-                plt.text((positions[node][0] + positions[neighbor][0]) / 2,
-                         (positions[node][1] + positions[neighbor][1]) / 2,
-                         str(weight) + ", " + str(accessibility_weight), fontsize=10, color='b')
-
-        # Draw nodes
-        for node, pos in positions.items():
-            plt.plot(pos[0], pos[1], 'ro')
-            plt.text(pos[0], pos[1], str(node), fontsize=12)
-
-        plt.title('Graph Visualization')
-        plt.xlabel('Node')
-        plt.ylabel('Weight')
-        plt.grid(True)
-        plt.show()
-
 
 if __name__ == '__main__':
     a = Node('A')
@@ -152,12 +120,3 @@ if __name__ == '__main__':
     path = graph.shortest_path(start, goal, accessibility_level)
     print("Shortest distance between " + str(start) + " and " + str(goal) + ": " + str(path[0]))
     print("Shortest path between " + str(start) + " and " + str(goal) + ": " + str(path[1]))
-
-    positions = {
-        a: (0, 4),
-        b: (-2, 2),
-        c: (2, 2),
-        d: (0, 0)
-    }
-
-    graph.draw(positions)
