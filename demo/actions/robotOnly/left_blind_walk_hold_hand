@@ -1,0 +1,13 @@
+IMAGE
+<*, *, *, *>:  img/question_mark.png
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Choice_1
+----
+TTS
+<*,*,it,*>: Prendi il mio braccio sinistro per continuare
+<*,*,*,*>:  Hold my left arm to continue
+----
+
+
+

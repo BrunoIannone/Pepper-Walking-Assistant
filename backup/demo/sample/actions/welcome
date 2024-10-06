@@ -1,0 +1,14 @@
+IMAGE
+<*, *, *, *>:  img/welcome.jpg
+----
+TEXT
+<*,*,it,*>: Benvenuto, mettiti di fronte a me per iniziare.
+<*,*,*,*>:  Benvenuto, mettiti di fronte a me per iniziare.
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Hey_1
+----
+TTS
+<*,*,it,*>: Ciao! Benvenuto!
+<*,*,*,*>:  Hello! Welcome!
+----

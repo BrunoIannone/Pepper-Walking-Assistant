@@ -1,0 +1,13 @@
+IMAGE
+<*, *, *, *>:  img/question_mark.png
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Choice_1
+----
+TEXT
+<*,*,it,*>: Sei sicuro di voler cancellare la procedura?
+<*,*,*,*>:  Are you sure you want to cancel the procedure?
+----
+
+
+

@@ -21,6 +21,7 @@ The map we included for demonstration purposes is the following:
 ![Map](media/map.jpg)
 
 Each edge shows two weights: distance and accessibility level. At runtime we filter out the edges with accessibility level above the selected one to leave only the paths the user can safely go through and we find the shortest path to the goal with the A* algorithm.
+We provided only two accessibility levels for now: 0 for motor disabilities or blindness, conditions that prevent the user from using stairs, and 1 for the other cases where architectural barriers are not a problem (e.g. deafness).
 
 ## Finite state automata
 
@@ -92,7 +93,7 @@ To start the application, run the python script from the root folder:
 
 ```bash
 # Example: language=english, accessibility level=1 (no stairs)
-python2 src/main.py --lang en --alevel 0
+python2 src/main.py --uid 0
 ```
 
 During the simulation we can interact with the robot with the `touch_sim` script to simulate the left/right hand touch:
