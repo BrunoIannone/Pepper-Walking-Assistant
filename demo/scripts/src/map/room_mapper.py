@@ -1,10 +1,11 @@
 from matplotlib import pyplot as plt
 
-from demo.scripts.src.map.graph import Graph
-from demo.scripts.src.map.room import Room
+from graph import Graph
+from room import Room
 
 
 class RoomMapper(Graph):
+    
     def __init__(self):
         super(RoomMapper, self).__init__()
         self.rooms = {}

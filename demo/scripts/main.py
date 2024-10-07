@@ -14,16 +14,10 @@ except Exception as e:
 
 from ws_client import *
 
-from src.interactions.action_manager import ActionManager
+from src.actions.action_manager import ActionManager
 from src.users.user_manager import UserManager
 from src.guide_me import guide_me
-
-
-def path_utils(relative_path):
-    """
-    Returns the path of the required file relative to the current one
-    """
-    return os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), relative_path))
+from src.utils.paths import get_path
 
 
 if __name__ == "__main__":
@@ -40,14 +34,6 @@ if __name__ == "__main__":
                         help="Number of seconds to wait with the hand raised before canceling the procedure")
     parser.add_argument("--uid", type=int, default=-1,
                         help="User id (testing purposes)")
-    """
-    parser.add_argument("--target_room", type=str, default="D",
-                        help='ID of the room to go to')
-    parser.add_argument("--alevel", type=int, default=1,
-                        help='Disability level. The higher it is, the more paths are available')
-    parser.add_argument("--lang", type=str, default='en',
-                        help='Language')
-    """
 
     args = parser.parse_args()
 
@@ -58,14 +44,14 @@ if __name__ == "__main__":
     print("[INFO] Working directory: " + os.getcwd())
 
     actionManager = ActionManager()
-    actions_database_path = actionManager.getActionsPath()
+    actions_database_path = actionManager.get_actions_path()
     print("[INFO] Generating actions from folder: " + actions_database_path)
 
     print("[INFO] Generated actions:")
     for action in actionManager.generated_actions:
         print("[INFO] \t" + action)
 
-    users_database_path = path_utils('../static/users/users.txt')
+    users_database_path = get_path('../static/users/users.txt')
     print("[INFO] Restoring users from: " + users_database_path)
     userManager = UserManager.load(users_database_path)
     
@@ -138,14 +124,14 @@ if __name__ == "__main__":
     # Ask for help
     if alevel == 0:  # Blindness
 
-        mws.run_interaction(actionManager.customGreeting)
+        mws.run_interaction(actionManager.custom_greeting)
         time.sleep(2)
-        mws.run_interaction(actionManager.blindAskHelp)
+        mws.run_interaction(actionManager.blind_ask_help)
         
-        status =  actionManager.checkStatus()
+        status =  actionManager.check_status()
         if(status != "failure"):
             print("[INFO] Blind help procedure starting")
-            # guide_me(args, mws)
+            guide_me()
         else:
             print("[INFO] Blind help procedure aborted")
             time.sleep(10)
@@ -153,17 +139,16 @@ if __name__ == "__main__":
     
     elif alevel == 1:  # Deafness
 
-        mws.run_interaction(actionManager.customGreeting)
+        mws.run_interaction(actionManager.custom_greeting)
         time.sleep(2)
-        mws.run_interaction(actionManager.deafAskHelp)
+        mws.run_interaction(actionManager.deaf_ask_help)
 
-        status =  actionManager.checkStatus()
+        status =  actionManager.check_status()
         if(status != "failure"):
             print("[INFO] Deaf help procedure starting")
-            dest = actionManager.checkStatus()
+            dest = actionManager.check_status()
             # TODO take the destination from the output file 
-            # subprocess.call(['python', '/home/robot/playground/pepper_walking_assistant/demo/sample/scripts/src/main.py', '--target_room', dest ])
-            # guide_me(args, mws)
+            guide_me()
         else:
             print("[INFO] Deaf help procedure aborted")
             time.sleep(10)

@@ -1,4 +1,4 @@
-from demo.scripts.src.map.node import Node
+from node import Node
 
 
 class Room(Node):
