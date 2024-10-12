@@ -1,9 +1,7 @@
 from automaton import TimeoutState, State, FiniteStateAutomaton
+from ..utils.limits import joint_limits
+from ..utils.postures import default_posture, left_arm_raised, right_arm_raised
 import math
-
-from demo.scripts.src.actions.position_manager import PositionManager
-from demo.scripts.src.utils.limits import joint_limits
-from demo.scripts.src.utils.postures import default_posture, left_arm_raised, right_arm_raised
 
 
 # ---------------------------------- States ---------------------------------- #
@@ -37,6 +35,7 @@ class SteadyState(TimeoutState):
 
 
 class MovingState(State):
+
     def __init__(self, automaton):
         super(MovingState, self).__init__('moving_state', automaton)
 
@@ -150,6 +149,7 @@ class AskState(TimeoutState):
 
 
 class RobotAutomaton(FiniteStateAutomaton):
+
     def __init__(self, modim_web_server, action_manager, position_manager, arm='Left', alevel=0):
         super(RobotAutomaton, self).__init__()
         self.modim_web_server = modim_web_server
@@ -160,10 +160,16 @@ class RobotAutomaton(FiniteStateAutomaton):
 
         # Connect the touch event to the automata
         touch_event = "Hand" + arm + "BackTouched"
-        touch_subscriber = self.action_manager.me_service.subscriber(touch_event)
-        touch_subscriber.signal.connect(self.on_hand_touch_change)
+        self.touch_subscriber = self.action_manager.me_service.subscriber(touch_event)
+        self.touch_subscriber.signal.connect(self.on_hand_touch_change)
+
+    # ----------------------------- Utility functions ---------------------------- #
 
     def on_hand_touch_change(self, value):
+        """
+        Callback function triggered when the hand touch event occurs.
+        Dispatch the event to the automata.
+        """
         print("[INFO] Hand touch value changed: " + str(value))
         if value == 0.0:
             self.on_event('hand_released')
@@ -199,14 +205,14 @@ class RobotAutomaton(FiniteStateAutomaton):
         """
         if self.alevel == 0:  # Blindness
             if self.arm == 'Left':
-                self.modim_web_server.run_interaction(self.action_manager.left_deaf_walk_handle)
+                self.modim_web_server.run_interaction(self.action_manager.left_deaf_walk_hold_hand)
             else:
-                self.modim_web_server.run_interaction(self.action_manager.right_deaf_walk_handle)
+                self.modim_web_server.run_interaction(self.action_manager.right_deaf_walk_hold_hand)
         elif self.alevel == 1:
             if self.arm == 'Left':
-                self.modim_web_server.run_interaction(self.action_manager.left_blind_walk_handle)
+                self.modim_web_server.run_interaction(self.action_manager.left_blind_walk_hold_hand)
             else:
-                self.modim_web_server.run_interaction(self.action_manager.right_blind_walk_handle)
+                self.modim_web_server.run_interaction(self.action_manager.right_blind_walk_hold_hand)
 
     def show_walk_message(self):
         """
@@ -222,6 +228,9 @@ class RobotAutomaton(FiniteStateAutomaton):
             self.modim_web_server.run_interaction(self.action_manager.blind_ask_cancel)
         elif self.alevel == 1:
             self.modim_web_server.run_interaction(self.action_manager.deaf_ask_cancel)
+    
+    def release_resources(self):
+        self.action_manager.touch_subscriber.signal.disconnect()
 
 
 def create_automaton(modim_web_server, action_manager, position_manager, wtime=10, arm='Left', alevel=0):

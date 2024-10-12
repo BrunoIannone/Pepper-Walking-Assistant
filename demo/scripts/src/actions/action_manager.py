@@ -78,8 +78,9 @@ class ActionManager:
 
             if os.path.isfile(os.path.join(actions_path, file_name)):
                 # Generate the function name
-                action_tokens = file_name.replace("_", " ").split()
-                function_name = ''.join(action_tokens)
+                # action_tokens = file_name.replace("_", " ").split()
+                # function_name = ''.join(action_tokens)
+                function_name = file_name
 
                 # Define the function dynamically
                 def make_action_func(action):
@@ -134,6 +135,13 @@ class ActionManager:
 
     def blind_ask_cancel(self):
         q = im.ask('blind_ask_cancel', timeout=999)
+        if (q == 'agree'):
+            self.set_status('result_yes')
+        else:
+            self.set_status('result_no')
+
+    def deaf_ask_cancel(self):
+        q = im.ask('deaf_ask_cancel', timeout=999)
         if (q == 'agree'):
             self.set_status('result_yes')
         else:

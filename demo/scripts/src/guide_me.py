@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from demo.scripts.src.actions.position_manager import PositionManager
+from actions.position_manager import PositionManager
 from map.room_mapper import RoomMapper
 from users.user_manager import UserManager
 from utils.paths import get_path
@@ -17,7 +17,7 @@ def guide_me(user, current_room, target_room, modim_web_server, action_manager, 
     first_room = path[0]
     arm_picked = 'Right' if first_room.x < 0 else 'Left'
     print("[INFO] Selected " + arm_picked.lower() + " hand to raise")
-
+    
     # Create the automaton
     robot_automaton = create_automaton(modim_web_server, action_manager, position_manager, wtime=wtime, arm=arm_picked,
                                        alevel=user.alevel)

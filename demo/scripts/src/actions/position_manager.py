@@ -1,4 +1,4 @@
-from demo.scripts.src.map.room_mapper import RoomMapper
+from ..map.room_mapper import RoomMapper
 
 
 class PositionManager:

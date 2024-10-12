@@ -4,8 +4,6 @@ import argparse
 import time
 import qi
 
-from demo.scripts.src.actions.position_manager import PositionManager
-
 try:
     sys.path.insert(0, os.getenv('MODIM_HOME')+'/src/GUI')
 except Exception as e:
@@ -16,6 +14,7 @@ except Exception as e:
 
 from ws_client import *
 
+from src.actions.position_manager import PositionManager
 from src.actions.action_manager import ActionManager
 from src.users.user_manager import UserManager
 from src.guide_me import guide_me
@@ -32,6 +31,8 @@ if __name__ == "__main__":
                         help="Naoqi port number")
     parser.add_argument("--current_room", type=str, default="A",
                         help="ID of the room you are currently in")
+    parser.add_argument("--target_room", type=str, default="D",
+                        help="ID of the room you want to go")
     parser.add_argument("--wtime", type=int, default=60,
                         help="Number of seconds to wait with the hand raised before canceling the procedure")
     parser.add_argument("--uid", type=int, default=-1,
@@ -51,7 +52,7 @@ if __name__ == "__main__":
         sys.exit(1)
     app.start()
     session = app.session
-    app.run()
+    # app.run()
 
     # Get the modim client
     mws = ModimWSClient()
@@ -150,7 +151,7 @@ if __name__ == "__main__":
         status =  actionManager.check_status()
         if(status != "failure"):
             print("[INFO] Blind help procedure starting")
-            guide_me()
+            guide_me(user, args.current_room, args.target_room, mws, actionManager, positionManager, wtime=10)
         else:
             print("[INFO] Blind help procedure aborted")
             time.sleep(10)
@@ -167,8 +168,10 @@ if __name__ == "__main__":
             print("[INFO] Deaf help procedure starting")
             dest = actionManager.check_status()
             # TODO take the destination from the output file 
-            guide_me()
+            guide_me(user, args.current_room, args.target_room, mws, actionManager, positionManager, wtime=10)
         else:
             print("[INFO] Deaf help procedure aborted")
             time.sleep(10)
             #continue
+
+    app.run()
