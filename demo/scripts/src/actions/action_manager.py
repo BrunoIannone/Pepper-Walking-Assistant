@@ -3,7 +3,15 @@ import os
 
 class ActionManager:
 
-    def __init__(self, outcome_path="/home/robot/playground/outcome.txt"):
+    def __init__(self, session, outcome_path="/home/robot/playground/outcome.txt"):
+
+        # Set session and services
+        self.session = session
+        self.as_service = session.service("ALAnimatedSpeech")
+        self.bm_service = session.service("ALBehaviorManager")
+        self.ap_service = session.service("ALAnimationPlayer")
+        self.mo_service = session.service("ALMotion")
+        self.me_service = session.service("ALMemory")
 
         # Generate the actions
         self.generated_actions = []
@@ -52,6 +60,11 @@ class ActionManager:
         with open(self.outcome_path, "r") as file:
             status = file.readline().strip()
         return str(status).strip()
+    
+    def set_status(self, status):
+        with open(self.outcome_path, "w") as file:
+            file.write(status)
+        return True
 
     def generate_robot_only_actions(self, actions_path=None):
         """
@@ -97,37 +110,34 @@ class ActionManager:
         if (q != 'timeout'):
             if q == 'agree':
                 required_dest = im.ask('deaf_agree', timeout=999)
-
-                with open(self.outcome_path, "w") as file:
-                    file.write(required_dest)
-
-                #subprocess.run(['python', '/home/robot/playground/pepper_walking_assistant/assistant/assistant.py'])
-
-                ## TODO: Andare in required_dest ( goto(required_dest) )
+                self.set_status(required_dest)
 
             else:
                 im.execute('deaf_disagree')
-                #print("PERCORSO ROBOT " + os.path.dirname(os.path.realpath(__file__ ))) #/home/robot/src/modim/src/GUI  #/home/robot/src/modim/src/GUI/../../../playground
-                with open(self.outcome_path, "w") as file:
-                    file.write("failure")
+                self.set_status("failure")
+
                 time.sleep(5)
                 im.init()
-                ## TODO: reset procedure?
 
     def blind_ask_help(self):
         q = im.ask('blind_ask_help', timeout=999)
         if (q == 'agree'):
             required_dest = im.ask('blind_agree', timeout=999)
-            with open(self.outcome_path, "w") as file:
-                file.write(required_dest)
+            self.set_status(required_dest)
 
         else:
             im.execute('blind_disagree')
-            with open(self.outcome_path, "w") as file:
-                file.write("failure")
+            self.set_status("failure")
+
             time.sleep(5)
             im.init()
-            ## TODO: reset procedure?        
+
+    def blind_ask_cancel(self):
+        q = im.ask('blind_ask_cancel', timeout=999)
+        if (q == 'agree'):
+            self.set_status('result_yes')
+        else:
+            self.set_status('result_no')
 
     def wait_for_human(self):
         stop_detection = False
@@ -158,10 +168,8 @@ class ActionManager:
     def record_user(self):
         modality = im.ask("record_user", timeout=999)
         print("MODALITY" + modality)
-        with open(self.outcome_path, "w") as file:
-            file.write(str(modality).strip())
+        self.set_status(str(modality).strip())
 
     def ask_language(self):
         modality = im.ask("ask_language", timeout=999)
-        with open(self.outcome_path, "w") as file:
-            file.write(str(modality).strip())
+        self.set_status(str(modality).strip())

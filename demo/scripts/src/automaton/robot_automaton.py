@@ -140,8 +140,9 @@ class AskState(TimeoutState):
         self.automaton.ask_cancel()
         print('[INFO] Asking the user if he wants to cancel the procedure')
 
-        # TODO add event ???
-        # self.automaton.on_event('response_yes')
+        result = self.automaton.action_manager.check_status()
+        print('[INFO] Obtained response: ' + result)
+        self.automaton.on_event(result)  # Can be 'result_yes' or 'result_no'
 
     def on_event(self, event):
         super(AskState, self).on_event(event)
@@ -164,14 +165,9 @@ class RobotAutomaton(FiniteStateAutomaton):
         self.arm = arm
         self.alevel = alevel
 
-        # TODO how should we bind the automaton to the session?
-
-        # TODO add services
-        # Services
-
         # Connect the touch event to the automata
         touch_event = "Hand" + arm + "BackTouched"
-        touch_subscriber = self.me_service.subscriber(touch_event)
+        touch_subscriber = self.action_manager.me_service.subscriber(touch_event)
         touch_subscriber.signal.connect(self.on_hand_touch_change)
 
     # ----------------------------- Utility functions ---------------------------- #
@@ -192,10 +188,10 @@ class RobotAutomaton(FiniteStateAutomaton):
         Perform a predefined animation. The animation should be visible by the behavior_manager 
         among the installed behaviors, otherwise it is silently discarded 
         """
-        behaviors = self.bm_service.getInstalledBehaviors()
+        behaviors = self.action_manager.bm_service.getInstalledBehaviors()
 
         if animation in behaviors:
-            self.ap_service.run(animation, _async=_async)
+            self.action_manager.ap_service.run(animation, _async=_async)
 
 
     def perform_movement(self, joint_values, speed=1.0, _async=True):
@@ -203,11 +199,11 @@ class RobotAutomaton(FiniteStateAutomaton):
         Perform the motion specified by the provided joint values. Joint values 
         should be in the allowed range, otherwise the value is silently discarded
         """
-        self.mo_service.setStiffnesses('Body', 1.0)
+        self.action_manager.mo_service.setStiffnesses('Body', 1.0)
 
         for joint_name, joint_value in joint_values.items():
             if joint_limits[joint_name][0] <= joint_value <= joint_limits[joint_name][1]:
-                self.mo_service.setAngles(joint_name, joint_value, speed, _async=_async)
+                self.action_manager.mo_service.setAngles(joint_name, joint_value, speed, _async=_async)
 
     def instruct(self):
         """
@@ -255,6 +251,6 @@ def create_automaton(modimWebServer, actionManager, wtime=10, arm='Left', alevel
     for state in [steady_state, moving_state, ask_state, hold_hand_state, quit_state]:
         automaton.add_state(state)
 
-    automaton.start('steady_state')
+    # automaton.start('steady_state')
 
     return automaton

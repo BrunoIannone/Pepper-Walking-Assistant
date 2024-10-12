@@ -19,6 +19,9 @@ def guide_me(user, path, modim_web_server, action_manager, wtime=10):
     # Create the automaton
     robot_automaton = create_automaton(modim_web_server, action_manager, wtime=wtime, arm=arm_picked, alevel=user.alevel)
 
+    # Start
+    robot_automaton.start('steady_state')
+
 
 if __name__ == "__main__":
 

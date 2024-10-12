@@ -2,6 +2,7 @@ import sys
 import os
 import argparse
 import time
+import qi
 
 
 try:
@@ -22,7 +23,7 @@ from src.utils.paths import get_path
 
 if __name__ == "__main__":
 
-        # ----------------------------- Argument parsing ----------------------------- #
+    # ----------------------------- Argument parsing ----------------------------- #
     parser = argparse.ArgumentParser()
     parser.add_argument("--pip", type=str, default=os.environ['PEPPER_IP'],
                         help="Robot IP address.  On robot or Local Naoqi: use '127.0.0.1'.")
@@ -37,13 +38,27 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # Starting application
+    pip = args.pip
+    pport = args.pport
+    try:
+        connection_url = "tcp://" + pip + ":" + str(pport)
+        app = qi.Application(["Memory Read", "--qi-url=" + connection_url])
+    except RuntimeError:
+        print("Can't connect to Naoqi at ip \"" + pip + "\" on port " + str(pport) + ".\n"
+                                                                                     "Please check your script arguments. Run with -h option for help.")
+        sys.exit(1)
+    app.start()
+    session = app.session
+    app.run()
+
     # Get the modim client
     mws = ModimWSClient()
     mws.setDemoPathAuto(__file__)
 
     print("[INFO] Working directory: " + os.getcwd())
 
-    actionManager = ActionManager()
+    actionManager = ActionManager(session)
     actions_database_path = actionManager.get_actions_path()
     print("[INFO] Generating actions from folder: " + actions_database_path)
 
