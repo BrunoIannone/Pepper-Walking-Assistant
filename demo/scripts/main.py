@@ -4,6 +4,7 @@ import argparse
 import time
 import qi
 
+from demo.scripts.src.actions.position_manager import PositionManager
 
 try:
     sys.path.insert(0, os.getenv('MODIM_HOME')+'/src/GUI')
@@ -66,7 +67,10 @@ if __name__ == "__main__":
     for action in actionManager.generated_actions:
         print("[INFO] \t" + action)
 
-    users_database_path = get_path('../static/users/users.txt')
+    map_path = get_path('static/maps/map.txt')
+    positionManager = PositionManager(map_path)
+
+    users_database_path = get_path('static/users/users.txt')
     print("[INFO] Restoring users from: " + users_database_path)
     userManager = UserManager.load(users_database_path)
     

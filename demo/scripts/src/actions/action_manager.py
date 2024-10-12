@@ -1,5 +1,5 @@
 import os
-
+import math
 
 class ActionManager:
 
@@ -173,3 +173,29 @@ class ActionManager:
     def ask_language(self):
         modality = im.ask("ask_language", timeout=999)
         self.set_status(str(modality).strip())
+
+    def move_to(self, target_x, target_y):
+        try:
+            current_x, current_y, current_theta = self.mo_service.getRobotPosition(True)
+            delta_x = target_x - current_x
+            delta_y = target_y - current_y
+            theta = math.atan2(delta_y, delta_x)
+
+            self.mo_service.moveTo(delta_x, delta_y, theta)
+            success = True
+            if success:
+                print("[INFO] Moved to position: ({}, {})".format(target_x, target_y))
+            else:
+                print("[INFO] Navigation failed or was interrupted")
+            return success
+        except Exception as e:
+            print("[ERROR] Failed to move: {}".format(e))
+            return False
+
+    def stop_motion(self):
+        try:
+            self.mo_service.stopMove()
+            current_x, current_y, _ = self.mo_service.getRobotPosition(True)
+            print("[INFO] Motion stopped. Current position: ({}, {})".format(current_x, current_y))
+        except Exception as e:
+            print("[ERROR] Failed to stop motion: {}".format(e))

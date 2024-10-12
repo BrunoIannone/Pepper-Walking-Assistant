@@ -1,7 +1,9 @@
 from automaton import TimeoutState, State, FiniteStateAutomaton
-from utils.limits import joint_limits
-from utils.postures import default_posture, left_arm_raised, right_arm_raised
 import math
+
+from demo.scripts.src.actions.position_manager import PositionManager
+from demo.scripts.src.utils.limits import joint_limits
+from demo.scripts.src.utils.postures import default_posture, left_arm_raised, right_arm_raised
 
 
 # ---------------------------------- States ---------------------------------- #
@@ -35,7 +37,6 @@ class SteadyState(TimeoutState):
 
 
 class MovingState(State):
-
     def __init__(self, automaton):
         super(MovingState, self).__init__('moving_state', automaton)
 
@@ -43,38 +44,30 @@ class MovingState(State):
         super(MovingState, self).on_enter()
         print('[INFO] Entering Moving State')
 
-        # Behavior 
-
+        # Behavior
         self.automaton.show_walk_message()
         print('[INFO] Showing walking icon on screen')
 
-        # TODO setup this
-        global current_x, current_y
-        global at_goal
-        global node_index
-        while not at_goal:
-            print('[INFO] At goal status: {}'.format(at_goal))
-            print('[INFO] Node index: {}'.format(node_index))
-            print('[INFO] Current target: {}'.format(coords[node_index]))
-            current_target_x, current_target_y = coords[node_index]
-            theta = math.atan2(current_target_y - current_y, current_target_x - current_x)
-            print('[INFO] Current theta: {}'.format(theta))
-            print('[INFO] Moving to: ' + str(current_target_x) + ', ' + str(current_target_y))
-            success = move_to(current_target_x, current_target_y, theta)
-            print('[INFO] Success state for {}: {}'.format(node_index, success))
-            if success:
-                node_index += 1
-            if node_index == len(coords):
-                print('[INFO] Success in exit if')
-                at_goal = True
+        while not self.automaton.position_manager.is_path_complete():
+            next_target = self.automaton.position_manager.get_next_target()
+            if next_target is None:
+                print('[INFO] Path completed')
+                break
 
-        print('[INFO] Success Exited from while loop')
+            target_x, target_y = next_target.x, next_target.y
+            success = self.automaton.action_manager.move_to(target_x, target_y)
 
-    # TODO setup this
+            if not success:
+                print('[INFO] Failed to move to the next target')
+                break
+
+        print(
+            '[INFO] Reached the goal' if self.automaton.position_manager.is_path_complete() else '[INFO] Navigation interrupted')
+
     def on_event(self, event):
         super(MovingState, self).on_event(event)
         if event == 'hand_released':
-            stop_motion()
+            self.automaton.action_manager.stop_motion()
             self.automaton.change_state('ask_state')
 
 
@@ -157,11 +150,11 @@ class AskState(TimeoutState):
 
 
 class RobotAutomaton(FiniteStateAutomaton):
-
-    def __init__(self, modim_web_server, action_manager, arm='Left', alevel=0):
+    def __init__(self, modim_web_server, action_manager, position_manager, arm='Left', alevel=0):
         super(RobotAutomaton, self).__init__()
         self.modim_web_server = modim_web_server
         self.action_manager = action_manager
+        self.position_manager = position_manager
         self.arm = arm
         self.alevel = alevel
 
@@ -170,13 +163,7 @@ class RobotAutomaton(FiniteStateAutomaton):
         touch_subscriber = self.action_manager.me_service.subscriber(touch_event)
         touch_subscriber.signal.connect(self.on_hand_touch_change)
 
-    # ----------------------------- Utility functions ---------------------------- #
-
     def on_hand_touch_change(self, value):
-        """
-        Callback function triggered when the hand touch event occurs.
-        Dispatch the event to the automata.
-        """
         print("[INFO] Hand touch value changed: " + str(value))
         if value == 0.0:
             self.on_event('hand_released')
@@ -237,9 +224,8 @@ class RobotAutomaton(FiniteStateAutomaton):
             self.modim_web_server.run_interaction(self.action_manager.deaf_ask_cancel)
 
 
-def create_automaton(modimWebServer, actionManager, wtime=10, arm='Left', alevel=0):
-
-    automaton = RobotAutomaton(modimWebServer, actionManager, arm=arm, alevel=alevel)
+def create_automaton(modim_web_server, action_manager, position_manager, wtime=10, arm='Left', alevel=0):
+    automaton = RobotAutomaton(modim_web_server, action_manager, position_manager, arm=arm, alevel=alevel)
 
     # Define and add states to the automaton
     steady_state = SteadyState(automaton, timeout=wtime)
