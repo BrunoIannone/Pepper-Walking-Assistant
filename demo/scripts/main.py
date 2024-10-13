@@ -151,7 +151,7 @@ if __name__ == "__main__":
         status =  actionManager.check_status()
         if(status != "failure"):
             print("[INFO] Blind help procedure starting")
-            guide_me(user, args.current_room, args.target_room, mws, actionManager, positionManager, wtime=10)
+            guide_me(active_user, args.current_room, args.target_room, mws, actionManager, positionManager, wtime=10)
         else:
             print("[INFO] Blind help procedure aborted")
             time.sleep(10)
@@ -168,7 +168,7 @@ if __name__ == "__main__":
             print("[INFO] Deaf help procedure starting")
             dest = actionManager.check_status()
             # TODO take the destination from the output file 
-            guide_me(user, args.current_room, args.target_room, mws, actionManager, positionManager, wtime=10)
+            guide_me(active_user, args.current_room, args.target_room, mws, actionManager, positionManager, wtime=10)
         else:
             print("[INFO] Deaf help procedure aborted")
             time.sleep(10)
