@@ -60,12 +60,12 @@ if __name__ == "__main__":
 
     print("[INFO] Working directory: " + os.getcwd())
 
-    actionManager = ActionManager(session)
-    actions_database_path = actionManager.get_actions_path()
+    action_manager = ActionManager(session)
+    actions_database_path = action_manager.get_actions_path()
     print("[INFO] Generating actions from folder: " + actions_database_path)
 
     print("[INFO] Generated actions:")
-    for action in actionManager.generated_actions:
+    for action in action_manager.generated_actions:
         print("[INFO] \t" + action)
 
     map_path = get_path('static/maps/map.txt')
@@ -98,8 +98,8 @@ if __name__ == "__main__":
     
     """
     else:
-        mws.run_interaction(actionManager.recordUser)
-        status =  actionManager.checkStatus()
+        mws.run_interaction(action_manager.recordUser)
+        status =  action_manager.checkStatus()
         if(status != "failure"):
             if(status == "vocal"):
                 disability = "blind"
@@ -107,7 +107,7 @@ if __name__ == "__main__":
                 disability = "deaf"
         else:
             print("[INFO] Routine canceled during modality selection ")
-            mws.run_interaction(actionManager.failure)
+            mws.run_interaction(action_manager.failure)
             exit(1)
 
             #continue
@@ -129,32 +129,32 @@ if __name__ == "__main__":
 
     # Set the language profile
     if language == "en":
-            mws.run_interaction(actionManager.set_profile_en)
+            mws.run_interaction(action_manager.set_profile_en)
     elif language == "it":
-        mws.run_interaction(actionManager.set_profile_it)
+        mws.run_interaction(action_manager.set_profile_it)
     else:
         raise ValueError("Invalid language: " + language)
 
     # Create custom greeting action file
     if newUser:
-        actionManager.create_custom_greeting("", alevel)  # Create a greeting action file for the new user
+        action_manager.create_custom_greeting("", alevel)  # Create a greeting action file for the new user
     else:
-        actionManager.create_custom_greeting(active_user.username, alevel)  # Create a greeting action file for the user
+        action_manager.create_custom_greeting(active_user.username, alevel)  # Create a greeting action file for the user
 
     # Ask for help
     if alevel == 0:  # Blindness
 
-        mws.run_interaction(actionManager.custom_greeting)
+        mws.run_interaction(action_manager.custom_greeting)
         time.sleep(2)
-        mws.run_interaction(actionManager.blind_ask_help)
+        mws.run_interaction(action_manager.blind_ask_help)
         
-        status =  actionManager.check_status()
+        status =  action_manager.check_status()
         if(status != "failure"):
             print("[INFO] Blind help procedure starting")
-            dest = actionManager.check_status()
+            dest = action_manager.check_status()
             # TODO check the destination is correct
-            # guide_me(active_user, args.current_room, args.target_room, mws, actionManager, positionManager, wtime=10)
-            guide_me(active_user, args.current_room, dest, mws, actionManager, positionManager, wtime=10)
+            # guide_me(active_user, args.current_room, args.target_room, mws, action_manager, positionManager, wtime=10)
+            guide_me(active_user, args.current_room, dest, mws, action_manager, positionManager, wtime=10)
         else:
             print("[INFO] Blind help procedure aborted")
             time.sleep(10)
@@ -162,17 +162,17 @@ if __name__ == "__main__":
     
     elif alevel == 1:  # Deafness
 
-        mws.run_interaction(actionManager.custom_greeting)
+        mws.run_interaction(action_manager.custom_greeting)
         time.sleep(2)
-        mws.run_interaction(actionManager.deaf_ask_help)
+        mws.run_interaction(action_manager.deaf_ask_help)
 
-        status =  actionManager.check_status()
+        status =  action_manager.check_status()
         if(status != "failure"):
             print("[INFO] Deaf help procedure starting")
-            dest = actionManager.check_status()
+            dest = action_manager.check_status()
             # TODO check the destination is correct
-            # guide_me(active_user, args.current_room, args.target_room, mws, actionManager, positionManager, wtime=10)
-            guide_me(active_user, args.current_room, dest, mws, actionManager, positionManager, wtime=10)
+            # guide_me(active_user, args.current_room, args.target_room, mws, action_manager, positionManager, wtime=10)
+            guide_me(active_user, args.current_room, dest, mws, action_manager, positionManager, wtime=10)
         else:
             print("[INFO] Deaf help procedure aborted")
             time.sleep(10)

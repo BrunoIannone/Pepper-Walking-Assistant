@@ -11,7 +11,19 @@ from actions.action_manager import ActionManager
 
 
 def guide_me(user, current_room, target_room, modim_web_server, action_manager, position_manager, wtime=10):
+
     path = position_manager.compute_path(current_room, target_room, user.alevel)
+
+    if len(path) > 2:
+        if user.alevel == 0:    # Blindness
+            modim_web_server.run_interaction(action_manager.blind_ask_call)
+        else:                   # Deafness
+            modim_web_server.run_interaction(action_manager.deaf_ask_call)
+
+        status = action_manager.check_status()
+        if (status != "failure"):
+            print("[INFO] Performing call to " + target_room + " room")
+            modim_web_server.run_interaction(action_manager.call)
 
     # Use the first node of the path to establish which hand to raise
     first_room = path[0]

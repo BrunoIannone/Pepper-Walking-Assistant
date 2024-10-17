@@ -147,6 +147,23 @@ class ActionManager:
         else:
             self.set_status('result_no')
 
+    def blind_ask_call(self):
+        q = im.ask('blind_ask_call', timeout=999)
+        if (q == 'agree'):
+            self.set_status('result_yes')
+        else:
+            self.set_status('result_no')
+
+    def call(self):
+        im.execute('call')
+
+    def deaf_ask_call(self):
+        q = im.ask('deaf_ask_call', timeout=999)
+        if (q == 'agree'):
+            self.set_status('result_yes')
+        else:
+            self.set_status('result_no')
+
     def wait_for_human(self):
         stop_detection = False
         is_human_detected = False

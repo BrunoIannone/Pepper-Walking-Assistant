@@ -1,0 +1,20 @@
+IMAGE
+<*, *, *, *>: img/ask_call.png
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Thinking_8
+----
+TEXT
+<*,*,it,*>: La stanza che vuoi raggiungere è lontana: vuoi collegarti in chiamata invece?
+<*,*,*,*>: The room you want to reach is far: do you want to connect to it via call?
+----
+BUTTONS
+yes
+<*,*,*,*>: Yes
+no
+<*,*,*,*>: No
+failure
+<*,*,it,*>: X
+<*,*,*,*>:  X
+----
+

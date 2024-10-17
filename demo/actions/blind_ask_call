@@ -1,0 +1,22 @@
+IMAGE
+<*, *, *, *>: img/ask_call.png
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Thinking_8
+----
+TTS
+<*,*,it,*>: La stanza che vuoi raggiungere è lontana: vuoi collegarti in chiamata invece?
+<*,*,*,*>: The room you want to reach is far: do you want to connect to it via call?
+----
+ASR
+<*,*,*,*>:  {'yes': ['si', 'certo', 'certamente', 'assolutamente'], 'no': ['yes', 'certainly', 'absolutely'],'failure':['cancel','abort','exit','cancella','esci','annulla','abbandona']}
+----
+BUTTONS
+yes
+<*,*,*,*>: Yes
+no
+<*,*,*,*>: No
+failure
+<*,*,it,*>: X
+<*,*,*,*>:  X
+----
