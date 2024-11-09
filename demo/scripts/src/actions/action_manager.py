@@ -3,7 +3,7 @@ import math
 
 class ActionManager:
 
-    def __init__(self, session, outcome_path="/home/robot/playground/outcome.txt"):
+    def __init__(self, session):
 
         # Set session and services
         self.session = session
@@ -16,8 +16,6 @@ class ActionManager:
         # Generate the actions
         self.generated_actions = []
         self.generate_robot_only_actions()
-
-        self.outcome_path = outcome_path
 
     def recognized_user(self):
         return True
@@ -137,7 +135,7 @@ class ActionManager:
         if (q == 'agree'):
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_yes')
-            
+
         else:
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_no')
