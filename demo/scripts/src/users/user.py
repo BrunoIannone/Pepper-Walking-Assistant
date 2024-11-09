@@ -4,7 +4,7 @@ class User:
     def __init__(self, userid, username, alevel, lang='en'):
         self.userid = userid
         self.username = username
-        self.alevel = alevel
+        self.alevel = alevel  # 0 = blind, 1 = deaf
         self.lang = lang
 
     def __str__(self):
