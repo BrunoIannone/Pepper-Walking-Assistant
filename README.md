@@ -103,13 +103,6 @@ During the simulation we can interact with the robot with the `touch_sim` script
 python2 src/touch_sim.py --sensor LHand --duration 20
 ```
 
-
-## TODO
-- Remove main_asr?
-- How to check status in main & action_manager
-- check todo on action_manager
-
-
 ## MODIM Guide
 
 This guide explains how to launch the various components of MODIM to set up Pepper in walking assistant mode.
