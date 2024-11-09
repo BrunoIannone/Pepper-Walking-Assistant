@@ -111,3 +111,11 @@ python2 src/touch_sim.py --sensor LHand --duration 20
 
 
 
+###### GUIDA A MODIM ########
+-lanciare pepper hri
+-lanciare naoqi
+FUORI docker, nella cartella hri_software/docker lanciare ./run_nginx.bash $HOME/playground/pepper_walking_assistant/demo/
+-avviare server modim  ~/src/modim/src/GUI$ python ws_server.py -robot pepper
+avviare browser e cercare localhost
+-avviare pepper_walking_utils.py (modificare utente manualmente nel codice )
+-usare pepper tools per la speech recognition in asr/huma_say.py con comando python human_say.py --sentence "frase da dire" 
