@@ -1,7 +1,6 @@
 from automaton import TimeoutState, State, FiniteStateAutomaton
 from ..utils.limits import joint_limits
 from ..utils.postures import default_posture, left_arm_raised, right_arm_raised
-import math
 
 
 # ---------------------------------- States ---------------------------------- #
@@ -230,7 +229,8 @@ class RobotAutomaton(FiniteStateAutomaton):
             self.modim_web_server.run_interaction(self.action_manager.deaf_ask_cancel)
     
     def release_resources(self):
-        self.action_manager.touch_subscriber.signal.disconnect()
+        # self.action_manager.touch_subscriber.signal.disconnect()
+        pass
 
 
 def create_automaton(modim_web_server, action_manager, position_manager, wtime=10, arm='Left', alevel=0):
