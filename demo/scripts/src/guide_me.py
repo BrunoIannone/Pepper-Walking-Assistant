@@ -14,7 +14,7 @@ def guide_me(user, current_room, target_room, modim_web_server, action_manager, 
 
     path = position_manager.compute_path(current_room, target_room, user.alevel)
 
-    if len(path) > 2:
+    if len(path) == 0:
         if user.alevel == 0:    # Blindness
             modim_web_server.run_interaction(action_manager.blind_ask_call)
         else:                   # Deafness

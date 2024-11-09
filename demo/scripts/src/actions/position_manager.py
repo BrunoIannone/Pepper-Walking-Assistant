@@ -8,7 +8,9 @@ class PositionManager:
         self.current_node_index = 0
 
     def compute_path(self, start_room, end_room, accessibility_level):
-        _, path = self.room_mapper.shortest_path(start_room, end_room, accessibility_level)
+        path_len, path = self.room_mapper.shortest_path(start_room, end_room, accessibility_level)
+        if path_len == float('inf'):
+            return []
         self.path = [self.room_mapper.rooms[node] for node in path]
         self.current_node_index = 0
         return self.path
