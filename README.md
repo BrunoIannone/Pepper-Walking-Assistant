@@ -85,7 +85,7 @@ From the modim tab:
 You can place your code in the `playground` directory. This will make it persistent between sessions.
 
 ```bash
-git clone https://github.com/BrunoIannone/pepper_walking_assistant.git <playground>/Pepper-Walking-Assistant
+git clone https://github.com/BrunoIannone/Pepper-Walking-Assistant.git <playground>/Pepper-Walking-Assistant
 cd <playground>/Pepper-Walking-Assistant
 ```
 
@@ -110,12 +110,28 @@ python2 src/touch_sim.py --sensor LHand --duration 20
 - check todo on action_manager
 
 
+## MODIM Guide
 
-###### GUIDA A MODIM ########
--lanciare pepper hri
--lanciare naoqi
-FUORI docker, nella cartella hri_software/docker lanciare ./run_nginx.bash $HOME/playground/pepper_walking_assistant/demo/
--avviare server modim  ~/src/modim/src/GUI$ python ws_server.py -robot pepper
-avviare browser e cercare localhost
--avviare pepper_walking_utils.py (modificare utente manualmente nel codice )
--usare pepper tools per la speech recognition in asr/huma_say.py con comando python human_say.py --sentence "frase da dire" 
+This guide explains how to launch the various components of MODIM to set up Pepper in walking assistant mode.
+
+### Instructions
+
+1. **Start Nginx**
+   - Outside of Docker, run the following command from the `hri_software/docker` directory:
+     ```bash
+     ./run_nginx.bash $HOME/playground/Pepper-Walking-Assistant/demo/
+     ```
+
+2. **Start the MODIM Server**
+   - Run the MODIM server from the `~/src/modim/src/GUI` directory:
+     ```bash
+     python ws_server.py -robot pepper
+     ```
+
+3. **Access the Browser**
+   - Open a browser and go to [localhost](http://localhost).
+
+---
+
+These instructions will allow you to start and use MODIM for the Pepper Walking Assistant project.
+

@@ -60,11 +60,6 @@ class ActionManager:
         with open(self.outcome_path, "r") as file:
             status = file.readline().strip()
         return str(status).strip()
-    
-    def set_status(self, status):
-        with open(self.outcome_path, "w") as file:
-            file.write(status)
-        return True
 
     def generate_robot_only_actions(self, actions_path=None):
         """
@@ -111,11 +106,13 @@ class ActionManager:
         if (q != 'timeout'):
             if q == 'agree':
                 required_dest = im.ask('deaf_agree', timeout=999)
-                self.set_status(required_dest)
+                with open("/home/robot/playground/outcome.txt","w") as file:
+                    file.write(required_dest)
 
             else:
                 im.execute('deaf_disagree')
-                self.set_status("failure")
+                with open("/home/robot/playground/outcome.txt","w") as file:
+                    file.write("failure")
 
                 time.sleep(5)
                 im.init()
@@ -124,11 +121,13 @@ class ActionManager:
         q = im.ask('blind_ask_help', timeout=999)
         if (q == 'agree'):
             required_dest = im.ask('blind_agree', timeout=999)
-            self.set_status(required_dest)
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write(required_dest)
 
         else:
             im.execute('blind_disagree')
-            self.set_status("failure")
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write("failure")
 
             time.sleep(5)
             im.init()
@@ -136,23 +135,30 @@ class ActionManager:
     def blind_ask_cancel(self):
         q = im.ask('blind_ask_cancel', timeout=999)
         if (q == 'agree'):
-            self.set_status('result_yes')
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write('result_yes')
+            
         else:
-            self.set_status('result_no')
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write('result_no')
 
     def deaf_ask_cancel(self):
         q = im.ask('deaf_ask_cancel', timeout=999)
         if (q == 'agree'):
-            self.set_status('result_yes')
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write('result_yes')
         else:
-            self.set_status('result_no')
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write('result_no')
 
     def blind_ask_call(self):
         q = im.ask('blind_ask_call', timeout=999)
         if (q == 'agree'):
-            self.set_status('result_yes')
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write('result_yes')
         else:
-            self.set_status('result_no')
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write('result_no')
 
     def call(self):
         im.execute('call')
@@ -160,9 +166,11 @@ class ActionManager:
     def deaf_ask_call(self):
         q = im.ask('deaf_ask_call', timeout=999)
         if (q == 'agree'):
-            self.set_status('result_yes')
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write('result_yes')
         else:
-            self.set_status('result_no')
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write('result_no')
 
     def wait_for_human(self):
         stop_detection = False
@@ -193,11 +201,13 @@ class ActionManager:
     def record_user(self):
         modality = im.ask("record_user", timeout=999)
         print("MODALITY" + modality)
-        self.set_status(str(modality).strip())
+        with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write(str(modality).strip())
 
     def ask_language(self):
         modality = im.ask("ask_language", timeout=999)
-        self.set_status(str(modality).strip())
+        with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write(str(modality).strip())
 
     def move_to(self, target_x, target_y):
         try:
