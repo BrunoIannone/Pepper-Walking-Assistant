@@ -77,11 +77,6 @@ From the naoqi tab:
 ./naoqi
 ```
 
-From the modim tab:
-```bash
-
-```
-
 You can place your code in the `playground` directory. This will make it persistent between sessions.
 
 ```bash
