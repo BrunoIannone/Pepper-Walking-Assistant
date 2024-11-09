@@ -18,4 +18,10 @@ B
 C
 <*,*,it,*>: destinazione3
 <*,*,*,*>:  destination3
+D
+<*,*,it,*>: destinazione4
+<*,*,*,*>:  destination4
+E
+<*,*,it,*>: destinazione5
+<*,*,*,*>:  destination5
 ----

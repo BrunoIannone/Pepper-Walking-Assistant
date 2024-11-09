@@ -6,6 +6,6 @@ TTS
 <*,*,*,*>:  Which is your destination?
 ----
 ASR 
-<*,*,it,*>:  {'destinazione1': ['destinazione1'], 'destinazione2': ['destinazione2'],'destinazione3': ['destinazione3']}
-<*,*,*,*>:  {'destination1': ['destination1'], 'destination2': ['destination2'],'destination3': ['destination3']}
+<*,*,it,*>:  {'A': ['destinazione1'], 'B': ['destinazione2'],'C': ['destinazione3'],'D': ['destinazione4'],'E': ['destinazione5']}
+<*,*,*,*>:  {'A': ['destinazione1'], 'B': ['destinazione2'],'C': ['destinazione3'],'D': ['destinazione4'],'E': ['destinazione5']}
 ----
