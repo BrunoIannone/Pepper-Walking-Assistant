@@ -5,7 +5,7 @@ import time
 import qi
 
 try:
-    sys.path.insert(0, os.getenv('MODIM_HOME')+'/src/GUI')
+    sys.path.insert(0, os.getenv('MODIM_HOME') + '/src/GUI')
 except Exception as e:
     print("Please set MODIM_HOME environment variable to MODIM folder.")
     sys.exit(1)
@@ -19,7 +19,6 @@ from src.actions.action_manager import ActionManager
 from src.users.user_manager import UserManager
 from src.guide_me import guide_me
 from src.utils.paths import get_path
-
 
 if __name__ == "__main__":
 
@@ -74,72 +73,69 @@ if __name__ == "__main__":
     users_database_path = get_path('static/users/users.txt')
     print("[INFO] Restoring users from: " + users_database_path)
     userManager = UserManager.load(users_database_path)
-    
+
     print("[INFO] Users database:")
     for user in userManager.users:
         print("[INFO] \t" + user.username + " [" + str(user.alevel) + "]")
 
-    #while True:
+    # while True:
     #    mws.run_interaction(waitForHuman) # Wait for human to position
 
-    """
-    TODO remove userid: at startup the robot waits for the human; if a human is present, it
-    uses face recognition to identify him and if not found it starts the register procedure
-    """
-    newUser = False
-    if args.uid == -1:
-        active_user = userManager.get_random_user()  # Debug, get random user
+    if args.uid not in userManager.users:
+
+        # Debug, get random user
+        # active_user = userManager.get_random_user()
+
+        # Create a temporary user
+
+        mws.run_interaction(action_manager.recordUser)
+        status = action_manager.checkStatus()
+        if (status != "failure"):
+            if (status == "vocal"):
+                alevel = 0
+            else:
+                alevel = 1
+        else:
+            print("[INFO] Routine canceled during modality selection")
+            mws.run_interaction(action_manager.failure)
+            exit(1)
+
+            # continue
+
+        mws.run_interaction(ask_language)
+        status = action_manager.check_status()
+        print("[INFO] Status: " + status)
+        if (status != "failure"):
+            if (status == "english"):
+                language = "en"
+            else:
+                language = "it"
+        else:
+            print("[INFO] Routine canceled during language selection")
+            mws.run_interaction(failure)
+            exit(1)
+            # continue
+
+        active_user = User(len(user_manager.users), "", alevle, language)
+
     else:
+        # User in db
         active_user = userManager.find_user_by_id(args.uid)
     print('[INFO] Active user: ' + active_user.username)
 
     language = active_user.lang
     alevel = active_user.alevel
-    
-    """
-    else:
-        mws.run_interaction(action_manager.recordUser)
-        status =  action_manager.checkStatus()
-        if(status != "failure"):
-            if(status == "vocal"):
-                disability = "blind"
-            else:
-                disability = "deaf"
-        else:
-            print("[INFO] Routine canceled during modality selection ")
-            mws.run_interaction(action_manager.failure)
-            exit(1)
-
-            #continue
-        
-        mws.run_interaction(askLanguage)
-        status =  pwu_obj.checkStatus()
-        print("STATUS "+ status)
-        if(status != "failure"):
-            if(status == "english"):
-                language = "en"
-            else:
-                language = "it"
-        else:
-            print("[INFO] ROUTINE CANCELED DURING LANGUAGE SELECTION ")
-            mws.run_interaction(failure)
-            exit(1)
-            #continue
-    """
 
     # Set the language profile
     if language == "en":
-            mws.run_interaction(action_manager.set_profile_en)
+        mws.run_interaction(action_manager.set_profile_en)
     elif language == "it":
         mws.run_interaction(action_manager.set_profile_it)
     else:
         raise ValueError("Invalid language: " + language)
 
     # Create custom greeting action file
-    if newUser:
-        action_manager.create_custom_greeting("", alevel)  # Create a greeting action file for the new user
-    else:
-        action_manager.create_custom_greeting(active_user.username, alevel)  # Create a greeting action file for the user
+    action_manager.create_custom_greeting(active_user.username, alevel)
 
     # Ask for help
     if alevel == 0:  # Blindness
@@ -147,9 +143,9 @@ if __name__ == "__main__":
         mws.run_interaction(action_manager.custom_greeting)
         time.sleep(2)
         mws.run_interaction(action_manager.blind_ask_help)
-        
-        status =  action_manager.check_status()
-        if(status != "failure"):
+
+        status = action_manager.check_status()
+        if (status != "failure"):
             print("[INFO] Blind help procedure starting")
             dest = action_manager.check_status()
             # TODO check the destination is correct
@@ -158,16 +154,16 @@ if __name__ == "__main__":
         else:
             print("[INFO] Blind help procedure aborted")
             time.sleep(10)
-            #continue
-    
+            # continue
+
     elif alevel == 1:  # Deafness
 
         mws.run_interaction(action_manager.custom_greeting)
         time.sleep(2)
         mws.run_interaction(action_manager.deaf_ask_help)
 
-        status =  action_manager.check_status()
-        if(status != "failure"):
+        status = action_manager.check_status()
+        if (status != "failure"):
             print("[INFO] Deaf help procedure starting")
             dest = action_manager.check_status()
             # TODO check the destination is correct
@@ -176,6 +172,6 @@ if __name__ == "__main__":
         else:
             print("[INFO] Deaf help procedure aborted")
             time.sleep(10)
-            #continue
+            # continue
 
     app.run()
