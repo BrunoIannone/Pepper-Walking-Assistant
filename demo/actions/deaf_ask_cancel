@@ -8,6 +8,13 @@ TEXT
 <*,*,it,*>: Sei sicuro di voler cancellare la procedura?
 <*,*,*,*>:  Are you sure you want to cancel the procedure?
 ----
-
-
-
+BUTTONS
+----
+BUTTONS
+agree
+<*,*,it,*>: Sì
+<*,*,*,*>:  Yes
+disagree
+<*,*,it,*>: No
+<*,*,*,*>:  No
+----
