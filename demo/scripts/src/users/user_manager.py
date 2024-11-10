@@ -45,6 +45,11 @@ class UserManager:
             for user in self.users:
                 file.write(str(user) + '\n')
 
+    def __iter__(self):
+        return iter(self.users)
+
+    def __contains__(self, userid):
+        return any(user.userid == userid for user in self.users)
 
 # Example usage
 if __name__ == "__main__":
@@ -56,6 +61,7 @@ if __name__ == "__main__":
     user_0 = User(0, "Daniel", 0, 'it')
     user_1 = User(1, "Iacopo", 1)
     user_2 = User(2, "Bruno", 1)
+    user_3 = User(3, "unknown", 1)
     users = [user_0, user_1, user_2]
     user_manager.add_users(users)
 

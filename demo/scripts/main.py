@@ -16,7 +16,7 @@ from ws_client import *
 
 from src.actions.position_manager import PositionManager
 from src.actions.action_manager import ActionManager
-from src.users.user_manager import user_manager
+from src.users.user_manager import UserManager
 from src.users.user import User
 
 from src.guide_me import guide_me
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     users_database_path = get_path('static/users/users.txt')
     print("[INFO] Restoring users from: " + users_database_path)
-    user_manager = user_manager.load(users_database_path)
+    user_manager = UserManager.load(users_database_path)
 
     print("[INFO] Users database:")
     for user in user_manager.users:
@@ -83,15 +83,15 @@ if __name__ == "__main__":
     # while True:
     #    mws.run_interaction(waitForHuman) # Wait for human to position
 
-    if args.uid not in user_manager.users:
+    if args.uid not in user_manager:
 
         # Debug, get random user
         # active_user = user_manager.get_random_user()
 
         # Create a temporary user
 
-        mws.run_interaction(action_manager.recordUser)
-        status = action_manager.checkStatus()
+        mws.run_interaction(action_manager.record_user)
+        status = action_manager.check_status()
         if (status != "failure"):
             if (status == "vocal"):
                 alevel = 0

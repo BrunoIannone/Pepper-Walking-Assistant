@@ -55,7 +55,7 @@ class ActionManager:
 
     def check_status(self):
         status = None
-        with open(self.outcome_path, "r") as file:
+        with open("/home/robot/playground/outcome.txt", "r") as file:
             status = file.readline().strip()
         return str(status).strip()
 
