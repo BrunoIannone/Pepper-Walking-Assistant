@@ -18,11 +18,6 @@ TODO
 
 The map we included for demonstration purposes is the following:
 
-![Map](media/map.jpg)
-
-Each edge shows two weights: distance and accessibility level. At runtime we filter out the edges with accessibility level above the selected one to leave only the paths the user can safely go through and we find the shortest path to the goal with the A* algorithm.
-We provided only two accessibility levels for now: 0 for motor disabilities or blindness, conditions that prevent the user from using stairs, and 1 for the other cases where architectural barriers are not a problem (e.g. deafness).
-
 ## Finite state automata
 
 Whenever the robot has to guide a user from the current position to a target destination, the motion script is launched.
@@ -36,6 +31,11 @@ More on the states:
 - `Ask` state: we reach this state if, during movement, the user leaves the hand of the robot. In this case the robot asks to the user if they really wants to cancel the procedure. The user can respond "No" or touch the hand again to resume or say "Yes" to confirm. If the maximum wait time elapses and the robot does not register a response, we move into the `Quit` state. If the user is deaf or has some kind of hearing impairment, all the interactions happen through the tablet;
 - `Say hold hand` state: if in the `Ask` state the user responds "No" to the question without touching the hand, the robot reminds him to touch the hand with a visual(on the tablet) or vocal message and we move into the `Moving` state again, resuming the motion;  
 - `Quit` state: release all the resources we allocated; 
+
+![Map](media/map.jpg)
+
+Each edge shows two weights: distance and accessibility level. At runtime we filter out the edges with accessibility level above the selected one to leave only the paths the user can safely go through and we find the shortest path to the goal with the A* algorithm.
+We provided only two accessibility levels for now: 0 for motor disabilities or blindness, conditions that prevent the user from using stairs, and 1 for the other cases where architectural barriers are not a problem (e.g. deafness).
 
 ## Installation and usage
 
@@ -94,24 +94,6 @@ docker ps -a
     cd <playground>/Pepper-Walking-Assistant
     ```
 
-    To start the application, run the python script from the `playground` tab in the tmux session:
-
-    ```bash
-    # Example: accessibility level=1 (no stairs) user id=0
-    python2 demo/scripts/main.py --uid 0
-    ```
-   
-    User recognition, automatic speech recognition and motion are unavailable in simulation. We need to give the robot
-    user id manually.
-
-2. **Interact with the robot** 
-
-   During the simulation we can interact with the robot with the `touch_sim` script to simulate the left/right hand touch: 
-   ```bash
-   # Example: keep touching the left hand for 20 seconds
-   python2 <pepper_tools>/touch/touch_sim.py --sensor LHand --duration 20
-   ```
-
 ### MODIM
 
 1. **Start Nginx**
@@ -136,3 +118,25 @@ docker ps -a
 3. **Access the Browser**
 
     Open a browser and go to [localhost](http://localhost).
+
+### Run the script
+
+1. **Start the application**
+   
+   To start the application, run the python script from the `playground` tab in the tmux session:
+    ```bash
+    # Example: accessibility level=1 (no stairs) user id=0
+    python2 demo/scripts/main.py --uid 0
+    ```
+   
+    User recognition, automatic speech recognition and motion are unavailable in simulation. We need to give the robot
+    user id manually.
+
+2. **Interact with the robot** 
+
+   During the simulation we can interact with the robot with the `touch_sim` script to simulate the left/right hand touch.
+   Run this command from the `pepper_tools` tab in the tmux session: 
+   ```bash
+   # Example: keep touching the left hand for 20 seconds
+   python2 <pepper_tools>/touch/touch_sim.py --sensor LHand --duration 20
+   ```
