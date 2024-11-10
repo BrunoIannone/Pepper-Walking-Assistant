@@ -16,7 +16,9 @@ from ws_client import *
 
 from src.actions.position_manager import PositionManager
 from src.actions.action_manager import ActionManager
-from src.users.user_manager import UserManager
+from src.users.user_manager import user_manager
+from src.users.user import User
+
 from src.guide_me import guide_me
 from src.utils.paths import get_path
 
@@ -72,19 +74,19 @@ if __name__ == "__main__":
 
     users_database_path = get_path('static/users/users.txt')
     print("[INFO] Restoring users from: " + users_database_path)
-    userManager = UserManager.load(users_database_path)
+    user_manager = user_manager.load(users_database_path)
 
     print("[INFO] Users database:")
-    for user in userManager.users:
+    for user in user_manager.users:
         print("[INFO] \t" + user.username + " [" + str(user.alevel) + "]")
 
     # while True:
     #    mws.run_interaction(waitForHuman) # Wait for human to position
 
-    if args.uid not in userManager.users:
+    if args.uid not in user_manager.users:
 
         # Debug, get random user
-        # active_user = userManager.get_random_user()
+        # active_user = user_manager.get_random_user()
 
         # Create a temporary user
 
@@ -102,7 +104,7 @@ if __name__ == "__main__":
 
             # continue
 
-        mws.run_interaction(ask_language)
+        mws.run_interaction(action_manager.ask_language)
         status = action_manager.check_status()
         print("[INFO] Status: " + status)
         if (status != "failure"):
@@ -112,15 +114,15 @@ if __name__ == "__main__":
                 language = "it"
         else:
             print("[INFO] Routine canceled during language selection")
-            mws.run_interaction(failure)
+            mws.run_interaction(action_manager.failure)
             exit(1)
             # continue
 
-        active_user = User(len(user_manager.users), "", alevle, language)
+        active_user = User(len(user_manager.users), "", alevel, language)
 
     else:
         # User in db
-        active_user = userManager.find_user_by_id(args.uid)
+        active_user = user_manager.find_user_by_id(args.uid)
     print('[INFO] Active user: ' + active_user.username)
 
     language = active_user.lang
