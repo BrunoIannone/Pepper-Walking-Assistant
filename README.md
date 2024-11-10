@@ -49,77 +49,85 @@ docker ps -a
 ```
 -->
 
-Run the latest version of the docker:
+### Docker
 
-```bash
-cd <hri_software>/docker
-./run.bash
-```
+1. **Run docker**
+    
+    Run the last version of docker:
+    ```bash
+    cd <hri_software>/docker
+    ./run.bash
+    ```
 
-Or run a specific version:
+    Or run a specific version:
+    ```bash
+    cd <hri_software>/docker
+    ./run.bash [<version>]
+    ```
+2. **Access the container**
 
-```bash
-cd <hri_software>/docker
-./run.bash [<version>]
-```
+    In another terminal:
+    ```bash
+    docker exec -it pepperhri tmux a
+    ```
 
-In another terminal, access the container:
+    This will launch a tmux session with a tab for each program you might need to communicate with a Pepper robot both in real life and simulation.
+    The tmux session makes it easy to start the servers.
 
-```bash
-docker exec -it pepperhri tmux a
-```
+    From the naoqi tab:
+    ```bash
+    ./naoqi
+    ```
+    
+    From the choregraphe tab:
+    ```bash
+    ./choregraphe
+    ```
+   
+### Clone the repo
 
-This will launch a tmux session with a tab for each program you might need to communicate with a Pepper robot both in real life and simulation.
-The tmux session makes it easy to start the servers.
+1. **Place the code in the `playground` directory**.
 
-From the naoqi tab:
-```bash
-./naoqi
-```
+    This will make it persistent between sessions.
+    ```bash
+    git clone https://github.com/BrunoIannone/Pepper-Walking-Assistant.git <playground>/Pepper-Walking-Assistant
+    cd <playground>/Pepper-Walking-Assistant
+    ```
 
-You can place your code in the `playground` directory. This will make it persistent between sessions.
+    To start the application, run the python script from the root folder:
 
-```bash
-git clone https://github.com/BrunoIannone/Pepper-Walking-Assistant.git <playground>/Pepper-Walking-Assistant
-cd <playground>/Pepper-Walking-Assistant
-```
+    ```bash
+    # Example: accessibility level=1 (no stairs) user id=0
+    python2 demo/scripts/main.py --uid 0
+    ```
+   
+    User recognition, automatic speech recognition and motion are unavailable in simulation. We need to give the robot
+    user id manually.
 
-To start the application, run the python script from the root folder:
+2. **Interact with the robot** 
 
-```bash
-# Example: language=english, accessibility level=1 (no stairs)
-python2 src/main.py --uid 0
-```
+   During the simulation we can interact with the robot with the `touch_sim` script to simulate the left/right hand touch: 
+   ```bash
+   # Example: keep touching the left hand for 20 seconds
+   python2 <pepper_tools>/touch/touch_sim.py --sensor LHand --duration 20
+   ```
 
-During the simulation we can interact with the robot with the `touch_sim` script to simulate the left/right hand touch:
-
-```bash
-# Example: keep touching the left hand for 20 seconds
-python2 src/touch_sim.py --sensor LHand --duration 20
-```
-
-## MODIM Guide
-
-This guide explains how to launch the various components of MODIM to set up Pepper in walking assistant mode.
-
-### Instructions
+### MODIM
 
 1. **Start Nginx**
-   - Outside of Docker, run the following command from the `hri_software/docker` directory:
-     ```bash
-     ./run_nginx.bash $HOME/playground/Pepper-Walking-Assistant/demo/
-     ```
+
+    Outside of Docker, run the following command from the `hri_software/docker` directory:
+    ```bash
+    ./run_nginx.bash $HOME/playground/Pepper-Walking-Assistant/demo/
+    ```
 
 2. **Start the MODIM Server**
-   - Run the MODIM server from the `~/src/modim/src/GUI` directory:
-     ```bash
-     python ws_server.py -robot pepper
-     ```
+
+    Run the MODIM server from the `src/Pepper/modim/src/GUI` directory:
+    ```bash
+    python ws_server.py -robot pepper
+    ```
 
 3. **Access the Browser**
-   - Open a browser and go to [localhost](http://localhost).
 
----
-
-These instructions will allow you to start and use MODIM for the Pepper Walking Assistant project.
-
+    Open a browser and go to [localhost](http://localhost).
