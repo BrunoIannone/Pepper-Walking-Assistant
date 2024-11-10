@@ -129,8 +129,8 @@ docker ps -a
     python2 demo/scripts/main.py --uid 0
     ```
    
-    User recognition, automatic speech recognition and motion are unavailable in simulation. We need to give the robot
-    user id manually.
+    User recognition, automatic speech recognition and motion are unavailable in simulation. We need to give to the robot
+    the user id manually.
 
 2. **Interact with the robot** 
 
