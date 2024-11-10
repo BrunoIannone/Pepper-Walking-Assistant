@@ -148,24 +148,23 @@ class ActionManager:
         else:
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_no')
-
+    
     def blind_ask_call(self):
         q = im.ask('blind_ask_call', timeout=999)
         if (q == 'agree'):
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_yes')
+            im.execute('call')
         else:
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_no')
-
-    def call(self):
-        im.execute('call')
 
     def deaf_ask_call(self):
         q = im.ask('deaf_ask_call', timeout=999)
         if (q == 'agree'):
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_yes')
+            im.execute('robotOnly/call')
         else:
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_no')

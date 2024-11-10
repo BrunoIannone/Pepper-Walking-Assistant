@@ -9,7 +9,7 @@ TEXT
 <*,*,*,*>: The room you want to reach is far: do you want to connect to it via call?
 ----
 BUTTONS
-yes
+agree
 <*,*,*,*>: Yes
 no
 <*,*,*,*>: No
