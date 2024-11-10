@@ -94,7 +94,7 @@ docker ps -a
     cd <playground>/Pepper-Walking-Assistant
     ```
 
-    To start the application, run the python script from the root folder:
+    To start the application, run the python script from the `playground` tab in the tmux session:
 
     ```bash
     # Example: accessibility level=1 (no stairs) user id=0
@@ -120,10 +120,15 @@ docker ps -a
     ```bash
     ./run_nginx.bash $HOME/playground/Pepper-Walking-Assistant/demo/
     ```
+   
+    Note: You should kill manually Nginx after you're done.
+    ```bash
+    sudo killall nginx
+    ```
 
 2. **Start the MODIM Server**
 
-    Run the MODIM server from the `src/Pepper/modim/src/GUI` directory:
+    Start the MODIM server from the `modim` tab in the tmux session:
     ```bash
     python ws_server.py -robot pepper
     ```
