@@ -106,7 +106,7 @@ if __name__ == "__main__":
             print("[INFO] Routine canceled during language selection")
             mws.run_interaction(action_manager.failure)
             exit(1)
-            # continue
+            
 
         active_user = User(len(user_manager.users), "", alevel, language)
 
