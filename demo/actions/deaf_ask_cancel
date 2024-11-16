@@ -9,12 +9,10 @@ TEXT
 <*,*,*,*>:  Are you sure you want to cancel the procedure?
 ----
 BUTTONS
-----
-BUTTONS
-agree
+yes
 <*,*,it,*>: Sì
 <*,*,*,*>:  Yes
-disagree
+no
 <*,*,it,*>: No
 <*,*,*,*>:  No
 ----

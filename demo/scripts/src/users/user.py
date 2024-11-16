@@ -1,4 +1,7 @@
 
+BLIND = 0
+DEAF = 1
+
 class User:
 
     def __init__(self, userid, username, alevel, lang='en'):

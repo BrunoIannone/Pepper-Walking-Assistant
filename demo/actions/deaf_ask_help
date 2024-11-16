@@ -9,10 +9,10 @@ TEXT
 <*,*,*,*>:  May I help you?
 ----
 BUTTONS
-agree
-<*,*,it,*>: Sì
+yes
+<*,*,it,*>: Si
 <*,*,*,*>:  Yes
-disagree
+no
 <*,*,it,*>: No
 <*,*,*,*>:  No
 ----

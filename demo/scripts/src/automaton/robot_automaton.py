@@ -1,6 +1,7 @@
 from automaton import TimeoutState, State, FiniteStateAutomaton
 from ..utils.limits import joint_limits
 from ..utils.postures import default_posture, left_arm_raised, right_arm_raised
+import time
 
 
 # ---------------------------------- States ---------------------------------- #
@@ -43,8 +44,13 @@ class MovingState(State):
         print('[INFO] Entering Moving State')
 
         # Behavior
-        self.automaton.show_walk_message()
-        print('[INFO] Showing walking icon on screen')
+        if self.automaton.alevel == 0:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_walking)
+            print('[INFO] Telling the user we are about to start walking')
+        else:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_walking)
+            print('[INFO] Showing walking icon on screen')
+        time.sleep(2)
 
         while not self.automaton.position_manager.is_path_complete():
             next_target = self.automaton.position_manager.get_next_target()
@@ -77,6 +83,11 @@ class QuitState(State):
     def on_enter(self):
         super(QuitState, self).on_enter()
         print('[INFO] Entering Quit State')
+
+        if self.automaton.alevel == 0:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
+        else:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
 
         # Go back to default position
         self.automaton.perform_movement(joint_values=default_posture)
@@ -127,8 +138,10 @@ class AskState(TimeoutState):
         print("[INFO] Entering Ask State")
 
         # Behavior
-
-        self.automaton.ask_cancel()
+        if self.alevel == 0:  # Blindness
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_ask_cancel)
+        elif self.alevel == 1:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_ask_cancel)
         print('[INFO] Asking the user if he wants to cancel the procedure')
 
         result = self.automaton.action_manager.check_status()
@@ -185,7 +198,6 @@ class RobotAutomaton(FiniteStateAutomaton):
         if animation in behaviors:
             self.action_manager.ap_service.run(animation, _async=_async)
 
-
     def perform_movement(self, joint_values, speed=1.0, _async=True):
         """
         Perform the motion specified by the provided joint values. Joint values 
@@ -204,29 +216,19 @@ class RobotAutomaton(FiniteStateAutomaton):
         """
         if self.alevel == 0:  # Blindness
             if self.arm == 'Left':
-                self.modim_web_server.run_interaction(self.action_manager.left_deaf_walk_hold_hand)
-            else:
-                self.modim_web_server.run_interaction(self.action_manager.right_deaf_walk_hold_hand)
-        elif self.alevel == 1:
-            if self.arm == 'Left':
+                print('[INFO] Instructing user with alevel=0 arm=Left')
                 self.modim_web_server.run_interaction(self.action_manager.left_blind_walk_hold_hand)
             else:
+                print('[INFO] Instructing user with alevel=0 arm=Right')
                 self.modim_web_server.run_interaction(self.action_manager.right_blind_walk_hold_hand)
-
-    def show_walk_message(self):
-        """
-        Show the walking icon on screen
-        """
-        self.modim_web_server.run_interaction(self.action_manager.walking)
-
-    def ask_cancel(self):
-        """
-        Ask the user if he wants to cancel the procedure
-        """
-        if self.alevel == 0:  # Blindness
-            self.modim_web_server.run_interaction(self.action_manager.blind_ask_cancel)
         elif self.alevel == 1:
-            self.modim_web_server.run_interaction(self.action_manager.deaf_ask_cancel)
+            if self.arm == 'Left':
+                print('[INFO] Instructing user with alevel=1 arm=Left')
+                self.modim_web_server.run_interaction(self.action_manager.left_deaf_walk_hold_hand)
+            else:
+                print('[INFO] Instructing user with alevel=1 arm=Right')
+                self.modim_web_server.run_interaction(self.action_manager.right_deaf_walk_hold_hand)
+        time.sleep(2)
     
     def release_resources(self):
         # self.action_manager.touch_subscriber.signal.disconnect()

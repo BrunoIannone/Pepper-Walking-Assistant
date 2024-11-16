@@ -140,3 +140,8 @@ docker ps -a
    # Example: keep touching the left hand for 20 seconds
    python2 <pepper_tools>/touch/touch_sim.py --sensor LHand --duration 20
    ```
+
+   ```bash
+   python2 <pepper_tools>/asr/human_say.py --sentence "Yes"
+   ```
+   

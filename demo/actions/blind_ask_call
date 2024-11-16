@@ -9,14 +9,6 @@ TTS
 <*,*,*,*>: The room you want to reach is far: do you want to connect to it via call?
 ----
 ASR
-<*,*,*,*>:  {'yes': ['si', 'certo', 'certamente', 'assolutamente'], 'no': ['yes', 'certainly', 'absolutely'],'failure':['cancel','abort','exit','cancella','esci','annulla','abbandona']}
-----
-BUTTONS
-yes
-<*,*,*,*>: Yes
-no
-<*,*,*,*>: No
-failure
-<*,*,it,*>: X
-<*,*,*,*>:  X
+<*,*,it,*>:  {'yes': ['si', 'certo', 'certamente', 'assolutamente'], 'no': ['no'], 'failure':['cancella','esci','annulla','abbandona']}
+<*,*,*,*>:  {'yes': ['yes', 'certainly', 'absolutely'], no': ['no'], 'failure': ['cancel', 'abort','exit']}
 ----

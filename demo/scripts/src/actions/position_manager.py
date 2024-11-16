@@ -7,6 +7,9 @@ class PositionManager:
         self.path = []
         self.current_node_index = 0
 
+    def is_valid(self, room):
+        return room in self.room_mapper.rooms.keys()
+
     def compute_path(self, start_room, end_room, accessibility_level):
         path_len, path = self.room_mapper.shortest_path(start_room, end_room, accessibility_level)
         if path_len == float('inf'):

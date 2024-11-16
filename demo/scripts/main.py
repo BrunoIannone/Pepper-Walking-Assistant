@@ -17,7 +17,7 @@ from ws_client import *
 from src.actions.position_manager import PositionManager
 from src.actions.action_manager import ActionManager
 from src.users.user_manager import UserManager
-from src.users.user import User
+from src.users.user import User, BLIND
 
 from src.guide_me import guide_me
 from src.utils.paths import get_path
@@ -62,12 +62,7 @@ if __name__ == "__main__":
     print("[INFO] Working directory: " + os.getcwd())
 
     action_manager = ActionManager(session)
-    actions_database_path = action_manager.get_actions_path()
-    print("[INFO] Generating actions from folder: " + actions_database_path)
-
-    print("[INFO] Generated actions:")
-    for action in action_manager.generated_actions:
-        print("[INFO] \t" + action)
+    print("[INFO] Setting up action manager")
 
     map_path = get_path('static/maps/map.txt')
     positionManager = PositionManager(map_path)
@@ -78,7 +73,7 @@ if __name__ == "__main__":
 
     print("[INFO] Users database:")
     for user in user_manager.users:
-        print("[INFO] \t" + user.username + " [" + str(user.alevel) + "]")
+        print("[INFO] \t" + user.username + " [" + str(user.userid) + "] [" + ("blind" if user.alevel == BLIND else "deaf") + "] [" + user.lang + "]")
 
     # while True:
     #    mws.run_interaction(waitForHuman) # Wait for human to position
@@ -147,12 +142,11 @@ if __name__ == "__main__":
         mws.run_interaction(action_manager.blind_ask_help)
 
         status = action_manager.check_status()
-        if (status != "failure"):
+        print('[INFO] User response: ' + status)
+        if status != "failure":
             print("[INFO] Blind help procedure starting")
-            dest = action_manager.check_status()
-            # TODO check the destination is correct
-            # guide_me(active_user, args.current_room, args.target_room, mws, action_manager, positionManager, wtime=10)
-            guide_me(active_user, args.current_room, dest, mws, action_manager, positionManager, wtime=10)
+            # status could be 'A', ..., 'E', or something else. The room mapper will tell if it is a valid room
+            guide_me(active_user, args.current_room, status, mws, action_manager, positionManager, wtime=args.wtime)
         else:
             print("[INFO] Blind help procedure aborted")
             time.sleep(10)
@@ -165,12 +159,10 @@ if __name__ == "__main__":
         mws.run_interaction(action_manager.deaf_ask_help)
 
         status = action_manager.check_status()
-        if (status != "failure"):
+        print('[INFO] User response: ' + status)
+        if status == "yes":
             print("[INFO] Deaf help procedure starting")
-            dest = action_manager.check_status()
-            # TODO check the destination is correct
-            # guide_me(active_user, args.current_room, args.target_room, mws, action_manager, positionManager, wtime=10)
-            guide_me(active_user, args.current_room, dest, mws, action_manager, positionManager, wtime=10)
+            guide_me(active_user, args.current_room, status, mws, action_manager, positionManager, wtime=args.wtime)
         else:
             print("[INFO] Deaf help procedure aborted")
             time.sleep(10)

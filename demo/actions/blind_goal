@@ -1,0 +1,7 @@
+IMAGE
+<*, *, *, *>:  img/target_room.png
+----
+TTS
+<*,*,it,*>: Siamo arrivati alla stanza
+<*,*,*,*>:  We reached the target room
+----

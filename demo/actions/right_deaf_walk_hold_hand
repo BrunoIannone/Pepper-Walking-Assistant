@@ -5,9 +5,6 @@ GESTURE
 <*,*,*,*>: animations/Stand/Gestures/Choice_1
 ----
 TEXT
-<*,*,it,*>: Prendi il mio braccio sinistro per continuare
-<*,*,*,*>:  Hold my left arm to continue
+<*,*,it,*>: Prendi il mio braccio destro per continuare
+<*,*,*,*>:  Hold my right arm to continue
 ----
-
-
-

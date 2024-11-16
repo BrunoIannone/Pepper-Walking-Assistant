@@ -1,16 +1,25 @@
 import os
 import argparse
-
 from actions.position_manager import PositionManager
 from map.room_mapper import RoomMapper
 from users.user_manager import UserManager
 from utils.paths import get_path
-from automaton.automaton import FiniteStateAutomaton
-from automaton.robot_automaton import RobotAutomaton, create_automaton
+from automaton.robot_automaton import create_automaton
 from actions.action_manager import ActionManager
+import time
 
 
 def guide_me(user, current_room, target_room, modim_web_server, action_manager, position_manager, wtime=10):
+
+    # Check if the destination is a valid room
+    if not position_manager.is_valid(current_room):
+        print("[ERROR] Invalid current room: " + current_room)
+        exit(1)
+    if not position_manager.is_valid(target_room):
+        print("[ERROR] Invalid target room: " + target_room)
+        exit(1)
+
+    print("[INFO] Going from " + current_room + " to " + target_room)
 
     path = position_manager.compute_path(current_room, target_room, user.alevel)
 
@@ -20,11 +29,17 @@ def guide_me(user, current_room, target_room, modim_web_server, action_manager, 
             modim_web_server.run_interaction(action_manager.blind_ask_call)
         else:                   # Deafness
             modim_web_server.run_interaction(action_manager.deaf_ask_call)
+        time.sleep(2)
 
         status = action_manager.check_status()
-        if (status != "failure"):
-            print("[INFO] Performing call to " + target_room + " room")
-            modim_web_server.run_interaction(action_manager.call)
+        if status != "failure":
+            print("[INFO] Performing call to room " + target_room)
+
+            if user.alevel == 0:
+                modim_web_server.run_interaction(action_manager.blind_call)
+            else:
+                modim_web_server.run_interaction(action_manager.deaf_call)
+            time.sleep(2)
 
     else:
         print("[INFO] Route to " + target_room + " found")
@@ -64,6 +79,7 @@ if __name__ == "__main__":
 
     # ------------------------------ Action Manager ------------------------------ #
 
+    # TODO fix this
     action_manager = ActionManager()
 
     # ------------------------------- User Manager ------------------------------- #

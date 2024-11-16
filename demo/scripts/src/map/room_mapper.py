@@ -123,8 +123,8 @@ if __name__ == "__main__":
 
     # Find a path
     distance, path = new_mapper.find_path("Lobby", "Office", max_accessibility=0)
-    print "Accessible path from Lobby to Office: {0}".format(" -> ".join(str(room) for room in path))
-    print "Distance: {0}".format(distance)
+    print("Accessible path from Lobby to Office: {0}".format(" -> ".join(str(room) for room in path)))
+    print("Distance: {0}".format(distance))
 
     # Visualize the map
     new_mapper.draw()

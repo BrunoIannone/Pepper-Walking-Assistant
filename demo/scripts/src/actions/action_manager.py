@@ -13,10 +13,6 @@ class ActionManager:
         self.mo_service = session.service("ALMotion")
         self.me_service = session.service("ALMemory")
 
-        # Generate the actions
-        self.generated_actions = []
-        self.generate_robot_only_actions()
-
     def recognized_user(self):
         return True
 
@@ -59,35 +55,6 @@ class ActionManager:
             status = file.readline().strip()
         return str(status).strip()
 
-    def generate_robot_only_actions(self, actions_path=None):
-        """
-        Generate the simple actions for which the robot does not expect a complex interaction with the user
-        """
-
-        if actions_path is None:
-            actions_path = os.path.join(self.get_actions_path(), 'robotOnly')
-
-        for file_name in os.listdir(actions_path):
-
-            if os.path.isfile(os.path.join(actions_path, file_name)):
-                # Generate the function name
-                # action_tokens = file_name.replace("_", " ").split()
-                # function_name = ''.join(action_tokens)
-                function_name = file_name
-
-                # Define the function dynamically
-                def make_action_func(action):
-                    def action_func():
-                        im.execute(action)
-
-                    return action_func
-
-                # Assign the function to the class
-                setattr(self, function_name, make_action_func(file_name))
-                self.generated_actions.append(function_name)
-
-    # ------------------------------ Complex actions ----------------------------- #
-
     def set_profile_en(self):
         im.setProfile(['*', '*', '*', '*'])
 
@@ -101,8 +68,8 @@ class ActionManager:
     def deaf_ask_help(self):
         q = im.ask("deaf_ask_help", timeout=999)
         print("RISPOSTA " + q)
-        if (q != 'timeout'):
-            if q == 'agree':
+        if q != 'timeout':
+            if q == 'yes':
                 required_dest = im.ask('deaf_agree', timeout=999)
                 with open("/home/robot/playground/outcome.txt","w") as file:
                     file.write(required_dest)
@@ -117,7 +84,7 @@ class ActionManager:
 
     def blind_ask_help(self):
         q = im.ask('blind_ask_help', timeout=999)
-        if (q == 'agree'):
+        if q == 'yes':
             required_dest = im.ask('blind_agree', timeout=999)
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write(required_dest)
@@ -132,7 +99,7 @@ class ActionManager:
 
     def blind_ask_cancel(self):
         q = im.ask('blind_ask_cancel', timeout=999)
-        if (q == 'agree'):
+        if q == 'yes':
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_yes')
 
@@ -142,7 +109,7 @@ class ActionManager:
 
     def deaf_ask_cancel(self):
         q = im.ask('deaf_ask_cancel', timeout=999)
-        if (q == 'agree'):
+        if q == 'yes':
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_yes')
         else:
@@ -151,19 +118,59 @@ class ActionManager:
 
     def blind_ask_call(self):
         q = im.ask('blind_ask_call', timeout=999)
-        if (q == 'agree'):
+        if q == 'yes':
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_yes')
         else:
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_no')
 
-    def call(self):
-        im.execute('call')
+    def deaf_call(self):
+        im.execute('deaf_call')
+
+    def blind_call(self):
+        im.execute('blind_call')
+
+    def blind_walking(self):
+        im.execute('blind_walking')
+
+    def deaf_walking(self):
+        im.execute('deaf_walking')
+
+    def blind_goal(self):
+        im.execute('blind_goal')
+
+    def deaf_goal(self):
+        im.execute('deaf_goal')
+
+    def welcome(self):
+        im.execute('welcome')
+
+    def left_blind_walk_hold_hand(self):
+        im.execute('left_blind_walk_hold_hand')
+
+    def right_blind_walk_hold_hand(self):
+        im.execute('right_blind_walk_hold_hand')
+
+    def left_deaf_walk_hold_hand(self):
+        im.execute('left_deaf_walk_hold_hand')
+
+    def right_deaf_walk_hold_hand(self):
+        im.execute('right_deaf_walk_hold_hand')
+
+    def blind_agree(self):
+        q = im.execute('blind_agree', timeout=999)
+        with open("/home/robot/playground/outcome.txt", "w") as file:
+            file.write(q)
+
+    def deaf_agree(self):
+        q = im.execute('deaf_agree', timeout=999)
+        with open("/home/robot/playground/outcome.txt", "w") as file:
+            file.write(q)
 
     def deaf_ask_call(self):
         q = im.ask('deaf_ask_call', timeout=999)
-        if (q == 'agree'):
+        if q == 'agree':
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_yes')
         else:

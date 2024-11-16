@@ -8,6 +8,7 @@ TTS
 <*,*,it,*>: Sei sicuro di voler cancellare la procedura?
 <*,*,*,*>:  Are you sure you want to cancel the procedure?
 ----
-
-
-
+ASR
+<*,*,it,*>:  {'yes': ['si', 'certo', 'certamente', 'assolutamente'], 'no': ['no'], 'failure':['cancella','esci','annulla','abbandona']}
+<*,*,*,*>:  {'yes': ['yes', 'certainly', 'absolutely'], no': ['no'], 'failure': ['cancel', 'abort','exit']}
+----
