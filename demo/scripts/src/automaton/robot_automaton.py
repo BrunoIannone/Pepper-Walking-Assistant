@@ -76,14 +76,15 @@ class MovingState(State):
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
         else:
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
+        self.on_event('goal_reached')
 
     def on_event(self, event):
         super(MovingState, self).on_event(event)
-        if event == 'hand_released':
+        if event == 'goal_reached':
+            self.automaton.change_state('quit_state')
+        elif event == 'hand_released':
             self.automaton.action_manager.stop_motion()
             self.automaton.change_state('ask_state')
-        elif event == 'goal_reached':
-            self.automaton.change_state('quit_state')
 
 class QuitState(State):
 
@@ -236,9 +237,7 @@ class RobotAutomaton(FiniteStateAutomaton):
         time.sleep(2)
     
     def release_resources(self):
-        # self.action_manager.touch_subscriber.signal.disconnect()
-        pass
-
+        self.touch_subscriber.signal.disconnect()
 
 def create_automaton(modim_web_server, action_manager, position_manager, wtime=10, arm='Left', alevel=0):
     automaton = RobotAutomaton(modim_web_server, action_manager, position_manager, arm=arm, alevel=alevel)
