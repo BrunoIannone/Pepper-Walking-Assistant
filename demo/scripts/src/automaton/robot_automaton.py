@@ -110,6 +110,9 @@ class QuitState(State):
 
         print("[INFO] Done")
 
+    def on_event(self, event):
+        super(QuitState, self)
+
 
 class HoldHandState(TimeoutState):
 
@@ -237,7 +240,14 @@ class RobotAutomaton(FiniteStateAutomaton):
         time.sleep(2)
     
     def release_resources(self):
-        self.touch_subscriber.signal.disconnect()
+        try:
+            if hasattr(self, 'touch_subscriber') and self.touch_subscriber:
+                if hasattr(self, 'touch_connection_id') and self.touch_connection_id:
+                    self.touch_subscriber.signal.disconnect(self.touch_connection_id)
+                    self.touch_connection_id = None
+                self.touch_subscriber = None
+        except Exception as e:
+            print("[WARNING] Error during signal disconnection: {}".format(str(e)))
 
 def create_automaton(modim_web_server, action_manager, position_manager, wtime=10, arm='Left', alevel=0):
     automaton = RobotAutomaton(modim_web_server, action_manager, position_manager, arm=arm, alevel=alevel)
