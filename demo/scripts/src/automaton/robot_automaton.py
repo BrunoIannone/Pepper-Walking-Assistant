@@ -61,19 +61,29 @@ class MovingState(State):
             target_x, target_y = next_target.x, next_target.y
             success = self.automaton.action_manager.move_to(target_x, target_y)
 
+            # TODO remove delay
+            time.sleep(0.5)
+
             if not success:
                 print('[INFO] Failed to move to the next target')
                 break
 
-        print(
-            '[INFO] Reached the goal' if self.automaton.position_manager.is_path_complete() else '[INFO] Navigation interrupted')
+        print('[INFO] Reached the goal' if self.automaton.position_manager.is_path_complete()
+              else '[INFO] Navigation interrupted')
+
+        # Showing goal icon and telling the user he reached the goal
+        if self.automaton.alevel == 0:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
+        else:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
 
     def on_event(self, event):
         super(MovingState, self).on_event(event)
         if event == 'hand_released':
             self.automaton.action_manager.stop_motion()
             self.automaton.change_state('ask_state')
-
+        elif event == 'goal_reached':
+            self.automaton.change_state('quit_state')
 
 class QuitState(State):
 
@@ -83,11 +93,6 @@ class QuitState(State):
     def on_enter(self):
         super(QuitState, self).on_enter()
         print('[INFO] Entering Quit State')
-
-        if self.automaton.alevel == 0:
-            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
-        else:
-            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
 
         # Go back to default position
         self.automaton.perform_movement(joint_values=default_posture)
@@ -129,20 +134,20 @@ class HoldHandState(TimeoutState):
 
 class AskState(TimeoutState):
 
-    def __init__(self, automaton, timeout=10, alevel=0):
+    def __init__(self, automaton, timeout=10):
         super(AskState, self).__init__('ask_state', automaton, timeout=timeout, timeout_event='steady_state')
-        self.alevel = alevel
 
     def on_enter(self):
         super(AskState, self).on_enter()
         print("[INFO] Entering Ask State")
 
         # Behavior
-        if self.alevel == 0:  # Blindness
+        if self.automaton.alevel == 0:  # Blindness
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_ask_cancel)
-        elif self.alevel == 1:
+            print('[INFO] Asking the user if he wants to cancel the procedure')
+        elif self.automaton.alevel == 1:
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_ask_cancel)
-        print('[INFO] Asking the user if he wants to cancel the procedure')
+            print('[INFO] Showing buttons for the user to choose if he wants to cancel the procedure')
 
         result = self.automaton.action_manager.check_status()
         print('[INFO] Obtained response: ' + result)
@@ -150,9 +155,9 @@ class AskState(TimeoutState):
 
     def on_event(self, event):
         super(AskState, self).on_event(event)
-        if event == 'response_yes':
+        if event == 'result_yes':
             self.automaton.change_state('quit_state')
-        elif event == 'response_no':
+        elif event == 'result_no':
             self.automaton.change_state('hold_hand_state')
         elif event == 'hand_touched':
             self.automaton.change_state('moving_state')

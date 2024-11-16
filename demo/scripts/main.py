@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
         status = action_manager.check_status()
         print('[INFO] User response: ' + status)
-        if status == "yes":
+        if status != "failure":
             print("[INFO] Deaf help procedure starting")
             guide_me(active_user, args.current_room, status, mws, action_manager, positionManager, wtime=args.wtime)
         else:
