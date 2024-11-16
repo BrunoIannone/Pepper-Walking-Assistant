@@ -10,18 +10,18 @@ TEXT
 ----
 BUTTONS
 A
-<*,*,it,*>: destinazione1
-<*,*,*,*>:  destination1
+<*,*,it,*>: A
+<*,*,*,*>:  A
 B
-<*,*,it,*>: destinazione2
-<*,*,*,*>:  destination2
+<*,*,it,*>: B
+<*,*,*,*>:  B
 C
-<*,*,it,*>: destinazione3
-<*,*,*,*>:  destination3
+<*,*,it,*>: C
+<*,*,*,*>:  C
 D
-<*,*,it,*>: destinazione4
-<*,*,*,*>:  destination4
+<*,*,it,*>: D
+<*,*,*,*>:  D
 E
-<*,*,it,*>: destinazione5
-<*,*,*,*>:  destination5
+<*,*,it,*>: E
+<*,*,*,*>:  E
 ----
