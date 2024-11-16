@@ -1,3 +1,5 @@
+from multiprocessing.managers import Value
+
 from ..map.room_mapper import RoomMapper
 
 
@@ -5,7 +7,10 @@ class PositionManager:
     def __init__(self, map_path):
         self.room_mapper = RoomMapper.from_file(map_path)
         self.path = []
+
         self.current_node_index = 0
+        self.current_room = None
+        self.next_room = None
 
     def is_valid(self, room):
         return room in self.room_mapper.rooms.keys()
@@ -15,14 +20,28 @@ class PositionManager:
         if path_len == float('inf'):
             return []
         self.path = [self.room_mapper.rooms[node] for node in path]
-        self.current_node_index = 0
+
+        self.current_room = self.path[self.current_node_index]
+        self.next_room = self.path[self.current_node_index + 1]  # At least two nodes
+
         return self.path
 
-    def get_next_target(self):
+    def get_current_room(self):
+        if len(self.path) == 0:
+            raise ValueError('Path is empty')
+        return self.current_room
+
+    def get_next_room(self):
+        if len(self.path) == 0:
+            raise ValueError('Path is empty')
+        return self.next_room
+
+    def next(self):
         if self.current_node_index < len(self.path):
-            target = self.path[self.current_node_index]
+            self.current_room = self.next_room
             self.current_node_index += 1
-            return target
+            self.next_room = self.path[self.current_node_index]
+            return self.current_room
         else:
             return None
 

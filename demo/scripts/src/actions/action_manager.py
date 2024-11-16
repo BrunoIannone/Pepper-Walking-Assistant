@@ -1,5 +1,7 @@
 import os
 import math
+import time
+
 
 class ActionManager:
 
@@ -12,6 +14,10 @@ class ActionManager:
         self.ap_service = session.service("ALAnimationPlayer")
         self.mo_service = session.service("ALMotion")
         self.me_service = session.service("ALMemory")
+
+        # Linear and angular velocities
+        self.default_lin_vel = 0.3
+        self.default_ang_vel = 0.7
 
     def recognized_user(self):
         return True
@@ -214,6 +220,12 @@ class ActionManager:
         with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write(str(modality).strip())
 
+    def set_speed(self, lin_vel, ang_vel, dtime):
+        self.mo_service.move(lin_vel, 0, ang_vel)
+        time.sleep(dtime)
+        self.mo_service.stopMove()
+
+    """
     def move_to(self, target_x, target_y):
         try:
             current_x, current_y, current_theta = self.mo_service.getRobotPosition(True)
@@ -230,6 +242,49 @@ class ActionManager:
             return success
         except Exception as e:
             print("[ERROR] Failed to move: {}".format(e))
+            return False
+    """
+
+    def move_to(self, target_x, target_y):
+        try:
+            current_x, current_y, current_theta = self.mo_service.getRobotPosition(True)
+
+            delta_x = target_x - current_x
+            delta_y = target_y - current_y
+            target_theta = math.atan2(delta_y, delta_x)
+
+            distance = math.sqrt(delta_x ** 2 + delta_y ** 2)
+            angle_diff = target_theta - current_theta
+
+            # Normalize angle to [-pi, pi]
+            while angle_diff > math.pi:
+                angle_diff -= 2 * math.pi
+            while angle_diff < -math.pi:
+                angle_diff += 2 * math.pi
+
+            if abs(angle_diff) > 0.1:
+                rotation_time = abs(angle_diff / self.default_ang_vel)
+                self.mo_service.move(0, 0, math.copysign(self.default_ang_vel, angle_diff))
+                time.sleep(rotation_time)
+                self.mo_service.stopMove()
+
+
+            if distance > 0.1:
+                movement_time = distance / self.default_lin_vel
+                self.mo_service.move(self.default_lin_vel, 0, 0)
+                time.sleep(movement_time)
+                self.mo_service.stopMove()
+
+
+            final_x, final_y, _ = self.mo_service.getRobotPosition(True)
+            print("Moved from ({:.2f}, {:.2f}) to ({:.2f}, {:.2f})"
+                  .format(current_x, current_y, final_x, final_y))
+
+            return True
+
+        except Exception as e:
+            print("[ERROR] Failed to move: {}".format(e))
+            self.mo_service.stopMove()
             return False
 
     def stop_motion(self):

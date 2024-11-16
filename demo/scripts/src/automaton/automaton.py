@@ -65,6 +65,7 @@ class TimeoutState(State):
             self.timer.cancel()
             self.timer = None
 
+
 class FiniteStateAutomaton(object):
     def __init__(self):
         self.states = {}

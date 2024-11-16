@@ -1,3 +1,7 @@
+import math
+import threading
+from datetime import datetime
+
 from automaton import TimeoutState, State, FiniteStateAutomaton
 from ..utils.limits import joint_limits
 from ..utils.postures import default_posture, left_arm_raised, right_arm_raised
@@ -34,24 +38,29 @@ class SteadyState(TimeoutState):
             self.automaton.change_state('quit_state')
 
 
+
+"""
+
 class MovingState(State):
 
     def __init__(self, automaton):
         super(MovingState, self).__init__('moving_state', automaton)
+        self.initial_message_printed = False
 
     def on_enter(self):
         super(MovingState, self).on_enter()
-        print('[INFO] Entering Moving State')
 
-        # Behavior
-        if self.automaton.alevel == 0:
-            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_walking)
-            print('[INFO] Telling the user we are about to start walking')
-        else:
-            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_walking)
-            print('[INFO] Showing walking icon on screen')
-        time.sleep(2)
+        if not self.initial_message_printed:
 
+            if self.automaton.alevel == 0:
+                self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_walking)
+                print('[INFO] Telling the user we are about to start walking')
+            else:
+                self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_walking)
+                print('[INFO] Showing walking icon on screen')
+            self.initial_message_printed = True
+            time.sleep(2)
+            
         while not self.automaton.position_manager.is_path_complete():
             next_target = self.automaton.position_manager.get_next_target()
             if next_target is None:
@@ -61,22 +70,29 @@ class MovingState(State):
             target_x, target_y = next_target.x, next_target.y
             success = self.automaton.action_manager.move_to(target_x, target_y)
 
-            # TODO remove delay
-            time.sleep(0.5)
-
             if not success:
                 print('[INFO] Failed to move to the next target')
                 break
 
-        print('[INFO] Reached the goal' if self.automaton.position_manager.is_path_complete()
-              else '[INFO] Navigation interrupted')
 
-        # Showing goal icon and telling the user he reached the goal
-        if self.automaton.alevel == 0:
-            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
+        time_now = datetime.now()
+        dtime = total_time - time_now
+        self.automaton.action_manager.set_speed(dtime)
+
+        lancia_evento_tra_s(tempo_rimanente, 'nodo_raggiunto')
+        
+        if last_step:
+
+            # Showing goal icon and telling the user he reached the goal
+            if self.automaton.alevel == 0:
+                self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
+            else:
+                self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
+            self.on_event('goal_reached')
+
+            self.on_event('goal_reached')
         else:
-            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
-        self.on_event('goal_reached')
+            self.on_event('continue_moving')
 
     def on_event(self, event):
         super(MovingState, self).on_event(event)
@@ -85,6 +101,91 @@ class MovingState(State):
         elif event == 'hand_released':
             self.automaton.action_manager.stop_motion()
             self.automaton.change_state('ask_state')
+        elif event == 'continue_moving':
+            self.automaton.change_state('moving_state')
+
+"""
+
+
+class MovementTimeoutState(TimeoutState):
+    def __init__(self, automaton):
+        super(MovementTimeoutState, self).__init__(
+            'moving_state',
+            automaton,
+            timeout=10,
+            timeout_event='node_reached'
+        )
+
+        self.velocity = self.automaton.action_manager.lin_vel
+        self.start_time = None
+        self.remaining_time = 10
+        self.movement_timer = None
+        current_x, current_y, theta = self.automaton.action_manager.mo_service.getRobotPosition(True)
+        next_room = self.automaton.position_manager.get_next_room()
+
+        if next_room:
+            self.distance = math.sqrt(
+                (next_room.x - current_x) ** 2 +
+                (next_room.y - current_y) ** 2
+            )
+            self.remaining_time = abs(self.distance / self.velocity)
+
+    def on_enter(self):
+        if self.movement_timer:
+            self.movement_timer.cancel()
+            self.movement_timer = None
+
+        print("Starting/Resuming movement with remaining time:", self.remaining_time)
+        self.start_time = datetime.now()
+        self.automaton.action_manager.set_speed(self.remaining_time)
+
+        self.movement_timer = threading.Timer(self.remaining_time, self._on_timeout)
+        self.movement_timer.start()
+
+    def on_event(self, event):
+        super(MovementTimeoutState, self).on_event(event)
+
+        if event == 'hand_released':
+            elapsed = (datetime.now() - self.start_time).total_seconds()
+            self.remaining_time = max(0, self.remaining_time - elapsed)
+
+            self.automaton.action_manager.stop_motion()
+            if self.movement_timer:
+                self.movement_timer.cancel()
+                self.movement_timer = None
+
+            print("Movement interrupted. Remaining time:", self.remaining_time)
+            self.automaton.change_state('ask_state')
+
+        elif event == 'node_reached':
+            print("Node reached")
+
+            if self.movement_timer:
+                self.movement_timer.cancel()
+                self.movement_timer = None
+
+            next_target = self.automaton.position_manager.get_next_target()
+            if next_target is None:
+                print("Path completed")
+                self.automaton.change_state('quit_state')
+            else:
+                current_x, current_y, theta = self.automaton.action_manager.mo_service.getRobotPosition(True)
+                next_distance = math.sqrt(
+                    (next_target.x - current_x) ** 2 +
+                    (next_target.y - current_y) ** 2
+                )
+
+                self.initialize_movement(next_distance)
+                self.automaton.change_state('moving_state')
+
+    def _on_timeout(self):
+        self.automaton.on_event('node_reached')
+
+    def __del__(self):
+        if self.movement_timer:
+            self.movement_timer.cancel()
+            self.movement_timer = None
+
 
 class QuitState(State):
 
@@ -181,7 +282,7 @@ class RobotAutomaton(FiniteStateAutomaton):
         # Connect the touch event to the automata
         touch_event = "Hand" + arm + "BackTouched"
         self.touch_subscriber = self.action_manager.me_service.subscriber(touch_event)
-        self.idTouch = self.touch_subscriber.signal.connect(self.on_hand_touch_change)
+        self.touch_id = self.touch_subscriber.signal.connect(self.on_hand_touch_change)
 
     # ----------------------------- Utility functions ---------------------------- #
 
@@ -239,14 +340,14 @@ class RobotAutomaton(FiniteStateAutomaton):
         time.sleep(2)
     
     def release_resources(self):
-        self.touch_subscriber.signal.disconnect(self.idTouch)
+        self.touch_subscriber.signal.disconnect(self.touch_id)
 
 def create_automaton(modim_web_server, action_manager, position_manager, wtime=10, arm='Left', alevel=0):
     automaton = RobotAutomaton(modim_web_server, action_manager, position_manager, arm=arm, alevel=alevel)
 
     # Define and add states to the automaton
     steady_state = SteadyState(automaton, timeout=wtime)
-    moving_state = MovingState(automaton)
+    moving_state = MovementTimeoutState(automaton)
     ask_state = AskState(automaton, timeout=wtime)
     hold_hand_state = HoldHandState(automaton, timeout=wtime)
     quit_state = QuitState(automaton)
