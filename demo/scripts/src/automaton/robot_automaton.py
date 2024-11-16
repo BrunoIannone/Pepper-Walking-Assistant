@@ -113,7 +113,6 @@ class QuitState(State):
     def on_event(self, event):
         super(QuitState, self)
 
-
 class HoldHandState(TimeoutState):
 
     def __init__(self, automaton, timeout=10):
@@ -182,7 +181,7 @@ class RobotAutomaton(FiniteStateAutomaton):
         # Connect the touch event to the automata
         touch_event = "Hand" + arm + "BackTouched"
         self.touch_subscriber = self.action_manager.me_service.subscriber(touch_event)
-        self.touch_subscriber.signal.connect(self.on_hand_touch_change)
+        self.idTouch = self.touch_subscriber.signal.connect(self.on_hand_touch_change)
 
     # ----------------------------- Utility functions ---------------------------- #
 
@@ -240,14 +239,7 @@ class RobotAutomaton(FiniteStateAutomaton):
         time.sleep(2)
     
     def release_resources(self):
-        try:
-            if hasattr(self, 'touch_subscriber') and self.touch_subscriber:
-                if hasattr(self, 'touch_connection_id') and self.touch_connection_id:
-                    self.touch_subscriber.signal.disconnect(self.touch_connection_id)
-                    self.touch_connection_id = None
-                self.touch_subscriber = None
-        except Exception as e:
-            print("[WARNING] Error during signal disconnection: {}".format(str(e)))
+        self.touch_subscriber.signal.disconnect(self.idTouch)
 
 def create_automaton(modim_web_server, action_manager, position_manager, wtime=10, arm='Left', alevel=0):
     automaton = RobotAutomaton(modim_web_server, action_manager, position_manager, arm=arm, alevel=alevel)
