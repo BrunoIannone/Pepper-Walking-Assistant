@@ -75,9 +75,6 @@ if __name__ == "__main__":
     for user in user_manager.users:
         print("[INFO] \t" + user.username + " [" + str(user.userid) + "] [" + ("blind" if user.alevel == BLIND else "deaf") + "] [" + user.lang + "]")
 
-    # while True:
-    #    mws.run_interaction(waitForHuman) # Wait for human to position
-
     if args.uid not in user_manager:
 
         # Debug, get random user
@@ -96,8 +93,6 @@ if __name__ == "__main__":
             print("[INFO] Routine canceled during modality selection")
             mws.run_interaction(action_manager.failure)
             exit(1)
-
-            # continue
 
         mws.run_interaction(action_manager.ask_language)
         status = action_manager.check_status()
@@ -149,8 +144,7 @@ if __name__ == "__main__":
             guide_me(active_user, args.current_room, status, mws, action_manager, positionManager, wtime=args.wtime)
         else:
             print("[INFO] Blind help procedure aborted")
-            time.sleep(10)
-            # continue
+            exit(1)
 
     elif alevel == 1:  # Deafness
 
@@ -165,7 +159,6 @@ if __name__ == "__main__":
             guide_me(active_user, args.current_room, status, mws, action_manager, positionManager, wtime=args.wtime)
         else:
             print("[INFO] Deaf help procedure aborted")
-            time.sleep(10)
-            # continue
+            exit(1)
 
     app.run()
