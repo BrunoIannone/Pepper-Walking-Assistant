@@ -161,4 +161,5 @@ if __name__ == "__main__":
             print("[INFO] Deaf help procedure aborted")
             exit(1)
 
-    app.run()
+    app.run() ##TODO check if relevant
+    
