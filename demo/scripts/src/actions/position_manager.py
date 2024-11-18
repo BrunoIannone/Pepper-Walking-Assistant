@@ -32,12 +32,14 @@ class PositionManager:
         return self.current_room
 
     def get_next_room(self):
-        if len(self.path) == 0:
-            raise ValueError('Path is empty')
-        return self.next_room
+        if len(self.path) > self.current_node_index + 1:
+            self.next_room = self.path[self.current_node_index + 1]
+            return self.next_room
+        else:
+            return None
 
     def next(self):
-        if self.current_node_index < len(self.path):
+        if self.current_node_index < len(self.path) - 1:
             self.current_room = self.next_room
             self.current_node_index += 1
             self.next_room = self.path[self.current_node_index]

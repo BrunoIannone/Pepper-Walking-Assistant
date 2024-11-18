@@ -116,28 +116,46 @@ class MovementTimeoutState(TimeoutState):
             timeout_event='node_reached'
         )
 
-        self.velocity = self.automaton.action_manager.lin_vel
+        self.lin_vel = self.automaton.action_manager.default_lin_vel
+        self.ang_vel = self.automaton.action_manager.default_ang_vel
         self.start_time = None
         self.remaining_time = 10
         self.movement_timer = None
-        current_x, current_y, theta = self.automaton.action_manager.mo_service.getRobotPosition(True)
-        next_room = self.automaton.position_manager.get_next_room()
-
-        if next_room:
-            self.distance = math.sqrt(
-                (next_room.x - current_x) ** 2 +
-                (next_room.y - current_y) ** 2
-            )
-            self.remaining_time = abs(self.distance / self.velocity)
 
     def on_enter(self):
         if self.movement_timer:
             self.movement_timer.cancel()
             self.movement_timer = None
 
-        print("Starting/Resuming movement with remaining time:", self.remaining_time)
+        if self.automaton.position_manager.is_path_complete():
+            self.automaton.change_state('quit_state')
+            return
+
+        next_target = self.automaton.position_manager.get_next_room()
+
+        if next_target is None:
+            print("Path completed")
+            self.automaton.change_state('quit_state')
+            return
+
+        current_x, current_y, _ = self.automaton.action_manager.mo_service.getRobotPosition(True)
+        self.distance = math.sqrt(
+            (next_target.x - current_x) ** 2 +
+            (next_target.y - current_y) ** 2
+        )
+        self.remaining_time = abs(self.distance / self.lin_vel)
+
+        print("Starting/Resuming movement to next target with remaining time:", self.remaining_time)
         self.start_time = datetime.now()
-        self.automaton.action_manager.set_speed(self.remaining_time)
+
+        success = self.automaton.action_manager.move_to(next_target.x, next_target.y)
+
+        if success:
+            self.automaton.position_manager.next()
+        else:
+            print("Failed to move to next target")
+            self.automaton.change_state('quit_state')
+            return
 
         self.movement_timer = threading.Timer(self.remaining_time, self._on_timeout)
         self.movement_timer.start()
@@ -164,19 +182,7 @@ class MovementTimeoutState(TimeoutState):
                 self.movement_timer.cancel()
                 self.movement_timer = None
 
-            next_target = self.automaton.position_manager.get_next_target()
-            if next_target is None:
-                print("Path completed")
-                self.automaton.change_state('quit_state')
-            else:
-                current_x, current_y, theta = self.automaton.action_manager.mo_service.getRobotPosition(True)
-                next_distance = math.sqrt(
-                    (next_target.x - current_x) ** 2 +
-                    (next_target.y - current_y) ** 2
-                )
-
-                self.initialize_movement(next_distance)
-                self.automaton.change_state('moving_state')
+            self.automaton.change_state('moving_state')
 
     def _on_timeout(self):
         self.automaton.on_event('node_reached')
