@@ -37,76 +37,6 @@ class SteadyState(TimeoutState):
         elif event == 'time_elapsed':
             self.automaton.change_state('quit_state')
 
-
-
-"""
-
-class MovingState(State):
-
-    def __init__(self, automaton):
-        super(MovingState, self).__init__('moving_state', automaton)
-        self.initial_message_printed = False
-
-    def on_enter(self):
-        super(MovingState, self).on_enter()
-
-        if not self.initial_message_printed:
-
-            if self.automaton.alevel == 0:
-                self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_walking)
-                print('[INFO] Telling the user we are about to start walking')
-            else:
-                self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_walking)
-                print('[INFO] Showing walking icon on screen')
-            self.initial_message_printed = True
-            time.sleep(2)
-            
-        while not self.automaton.position_manager.is_path_complete():
-            next_target = self.automaton.position_manager.get_next_target()
-            if next_target is None:
-                print('[INFO] Path completed')
-                break
-
-            target_x, target_y = next_target.x, next_target.y
-            success = self.automaton.action_manager.move_to(target_x, target_y)
-
-            if not success:
-                print('[INFO] Failed to move to the next target')
-                break
-
-
-        time_now = datetime.now()
-        dtime = total_time - time_now
-        self.automaton.action_manager.set_speed(dtime)
-
-        lancia_evento_tra_s(tempo_rimanente, 'nodo_raggiunto')
-        
-        if last_step:
-
-            # Showing goal icon and telling the user he reached the goal
-            if self.automaton.alevel == 0:
-                self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
-            else:
-                self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
-            self.on_event('goal_reached')
-
-            self.on_event('goal_reached')
-        else:
-            self.on_event('continue_moving')
-
-    def on_event(self, event):
-        super(MovingState, self).on_event(event)
-        if event == 'goal_reached':
-            self.automaton.change_state('quit_state')
-        elif event == 'hand_released':
-            self.automaton.action_manager.stop_motion()
-            self.automaton.change_state('ask_state')
-        elif event == 'continue_moving':
-            self.automaton.change_state('moving_state')
-
-"""
-
-
 class MovementTimeoutState(TimeoutState):
     def __init__(self, automaton):
         super(MovementTimeoutState, self).__init__(
@@ -120,7 +50,7 @@ class MovementTimeoutState(TimeoutState):
         self.start_time = None
         self.remaining_time = 10
         self.movement_timer = None
-        current_x, current_y, theta = self.automaton.action_manager.mo_service.getRobotPosition(True)
+        current_x, current_y, theta = self.automaton.action_manager.action_manager.mo_service.getRobotPosition(True)
         next_room = self.automaton.position_manager.get_next_room()
 
         if next_room:
@@ -169,7 +99,7 @@ class MovementTimeoutState(TimeoutState):
                 print("Path completed")
                 self.automaton.change_state('quit_state')
             else:
-                current_x, current_y, theta = self.automaton.action_manager.mo_service.getRobotPosition(True)
+                current_x, current_y, theta = self.automaton.mo_service.getRobotPosition(True)
                 next_distance = math.sqrt(
                     (next_target.x - current_x) ** 2 +
                     (next_target.y - current_y) ** 2
@@ -187,6 +117,138 @@ class MovementTimeoutState(TimeoutState):
             self.movement_timer = None
 
 
+class MovingState(State):
+
+    def __init__(self, automaton):
+        super(MovingState, self).__init__('moving_state', automaton)
+
+        self.current_room = None
+        self.next_room = None
+        self.path_index = 0
+
+        self.move_timer = None      # This timer will automatically stop the movement after the time has passed
+        self.start_time = None      # When the timer started
+        self.remaining_time = None  # Remaining time for the current movement
+
+    def compute_travel_time(self):
+        """
+        Computes the time required to move between the current and next room.
+        Assumes a constant speed. The two rooms need to be defined
+        """
+        if self.current_room and self.next_room:
+            distance = self.current_room.distance(self.next_room)
+            speed = self.automaton.action_manager.default_lin_vel
+            return distance / speed
+        return 0
+
+    def on_enter(self):
+        super(MovingState, self).on_enter()
+
+        self.current_room = self.automaton.position_manager.path[self.path_index]
+        self.next_room = (
+            self.automaton.position_manager.path[self.path_index + 1]
+            if self.path_index + 1 < len(self.automaton.position_manager.path)
+            else None
+        )
+
+        # Resume the movement if was paused, start a movement if it was not already started
+        if self.remaining_time is None:
+            self.remaining_time = self.compute_travel_time()
+            print("[INFO] Entering " + str(self.name) + ". " +
+                  "Moving from " + str(self.current_room) + " to " + str(self.next_room) + ". " +
+                  "Remaining time: " + str(self.remaining_time)
+            )
+
+        self.start_timer(self.remaining_time)
+
+        v_x, v_y, omega_z = self.compute_velocity(0.7, 0.3)
+        self.automaton.action_manager.mo_service.move(v_x, v_y, omega_z)
+
+    def on_event(self, event):
+        super(MovingState, self).on_event(event)
+
+        if event == 'room_reached':
+
+            # Go to the next room
+            self.path_index += 1
+
+            # These need to be recomputed
+            self.remaining_time = None
+            self.start_time = None
+
+            # Check if we reached the goal (we are now currently on the last position in the path)
+            if self.path_index == len(self.automaton.position_manager.path) - 1:
+
+                # Stop the robot
+                self.automaton.action_manager.mo_service.stopMove()
+                print("[INFO] Stopping the robot")
+
+                print("[INFO] Path completed. Transitioning to GoalState.")
+                self.automaton.change_state('quit_state')
+            else:
+                # Re-enter the same state
+                self.automaton.change_state('moving_state')
+
+        elif event == 'hand_released':
+
+            # Stop the robot
+            self.automaton.action_manager.mo_service.stopMove()
+            print("[INFO] Stopping the robot")
+
+            # Cancel the timer
+            self.move_timer.cancel()
+            self.move_timer = None
+            print("[INFO] Stopping the timer")
+
+            elapsed_time = time.time() - self.start_time
+            self.remaining_time = max(self.remaining_time - elapsed_time, 0)
+
+            self.automaton.change_state('ask_state')
+
+    def start_timer(self, duration):
+        """
+        Start a timer to simulate movement and trigger the `room_reached` event.
+        """
+
+        self.start_time = time.time()
+
+        def trigger_event():
+            print("[INFO] Triggering `room_reached` event.")
+            self.on_event("room_reached")
+
+        self.move_timer = threading.Timer(duration, trigger_event)
+        self.move_timer.start()
+
+    def compute_velocity(self, v_max, omega_max):
+
+        # Unpack current and next points
+        x_c, y_c = self.current_room.x, self.current_room.y
+        x_n, y_n = self.next_room.x, self.next_room.y
+
+        # Compute the differences
+        delta_x = x_n - x_c
+        delta_y = y_n - y_n
+        theta = math.atan2(delta_y, delta_x)
+        d = math.sqrt(delta_x ** 2 + delta_y ** 2)
+
+        # Linear velocities
+        if d > 0:
+            v_x = v_max * (delta_x / d)
+            v_y = v_max * (delta_y / d)
+        else:
+            v_x = 0
+            v_y = 0
+
+        # Angular velocity
+        # TODO fix this
+        delta_theta = 0
+
+        # Normalize to [-pi, pi]
+        delta_theta = (delta_theta + math.pi) % (2 * math.pi) - math.pi
+        omega_z = max(-omega_max, min(delta_theta, omega_max))
+
+        return v_x, v_y, omega_z
+
 class QuitState(State):
 
     def __init__(self, automaton):
@@ -200,11 +262,12 @@ class QuitState(State):
         self.automaton.perform_movement(joint_values=default_posture)
         print('[INFO] Resetting posture')
 
-        # Unsubscribe from signals
-        # global touch_subscriber, word_subscriber, sr_service
-        # sr_service.unsubscribe("pepper_walking_assistant_ASR")
-        # word_subscriber.signal.disconnect()
-        # touch_subscriber.signal.disconnect()
+        # Signaling the user we reached the target
+        if self.automaton.alevel == 0:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
+        else:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
+        print('[INFO] Signaling the user we reached the target')
 
         self.automaton.release_resources()
         print('[INFO] Releasing resources')
@@ -246,6 +309,7 @@ class AskState(TimeoutState):
         print("[INFO] Entering Ask State")
 
         # Behavior
+        # TODO problem here
         if self.automaton.alevel == 0:  # Blindness
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_ask_cancel)
             print('[INFO] Asking the user if he wants to cancel the procedure')
@@ -312,11 +376,19 @@ class RobotAutomaton(FiniteStateAutomaton):
         Perform the motion specified by the provided joint values. Joint values 
         should be in the allowed range, otherwise the value is silently discarded
         """
-        self.action_manager.mo_service.setStiffnesses('Body', 1.0)
 
+        # Enable stiffness
+        self.action_manager.mo_service.setStiffnesses(["LArm", "RArm"], 1.0)
+
+        # Perform movement
         for joint_name, joint_value in joint_values.items():
             if joint_limits[joint_name][0] <= joint_value <= joint_limits[joint_name][1]:
                 self.action_manager.mo_service.setAngles(joint_name, joint_value, speed, _async=_async)
+
+        time.sleep(2)
+
+        # Disable arm stiffness during walking
+        self.action_manager.mo_service.setStiffnesses(["LArm", "RArm"], 0.0)
 
     def instruct(self):
         """
@@ -347,7 +419,8 @@ def create_automaton(modim_web_server, action_manager, position_manager, wtime=1
 
     # Define and add states to the automaton
     steady_state = SteadyState(automaton, timeout=wtime)
-    moving_state = MovementTimeoutState(automaton)
+    # moving_state = MovementTimeoutState(automaton)
+    moving_state = MovingState(automaton)
     ask_state = AskState(automaton, timeout=wtime)
     hold_hand_state = HoldHandState(automaton, timeout=wtime)
     quit_state = QuitState(automaton)

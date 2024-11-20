@@ -14,10 +14,6 @@ The process is divided into two phases: during the first phase the user approach
 
 TODO
 
-## Map
-
-The map we included for demonstration purposes is the following:
-
 ## Finite state automata
 
 Whenever the robot has to guide a user from the current position to a target destination, the motion script is launched.
@@ -31,6 +27,10 @@ More on the states:
 - `Ask` state: we reach this state if, during movement, the user leaves the hand of the robot. In this case the robot asks to the user if they really wants to cancel the procedure. The user can respond "No" or touch the hand again to resume or say "Yes" to confirm. If the maximum wait time elapses and the robot does not register a response, we move into the `Quit` state. If the user is deaf or has some kind of hearing impairment, all the interactions happen through the tablet;
 - `Say hold hand` state: if in the `Ask` state the user responds "No" to the question without touching the hand, the robot reminds him to touch the hand with a visual(on the tablet) or vocal message and we move into the `Moving` state again, resuming the motion;  
 - `Quit` state: release all the resources we allocated; 
+
+## Map
+
+The map we included for demonstration purposes is the following:
 
 ![Map](media/map.jpg)
 

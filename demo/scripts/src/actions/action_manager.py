@@ -233,8 +233,12 @@ class ActionManager:
             delta_y = target_y - current_y
             theta = math.atan2(delta_y, delta_x)
 
+            self.mo_service.moveTo(current_x, current_y, theta)
             self.mo_service.moveTo(delta_x, delta_y, theta)
+
+            # TODO remove this
             success = True
+
             if success:
                 print("[INFO] Moved to position: ({}, {})".format(target_x, target_y))
             else:
