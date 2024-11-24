@@ -90,8 +90,10 @@ class ActionManager:
 
     def blind_ask_help(self):
         q = im.ask('blind_ask_help', timeout=999)
+        print('[BAH] blind_ask_help response: ' + str(q))
         if q == 'yes':
             required_dest = im.ask('blind_agree', timeout=999)
+            print('[BAH] blind_agree response: ' + str(required_dest))
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write(required_dest)
 
@@ -108,7 +110,6 @@ class ActionManager:
         if q == 'yes':
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_yes')
-
         else:
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_no')

@@ -126,6 +126,8 @@ class MovingState(State):
         self.next_room = None
         self.path_index = 0
 
+        self.theta_reached = False
+
         self.move_timer = None      # This timer will automatically stop the movement after the time has passed
         self.start_time = None      # When the timer started
         self.remaining_time = None  # Remaining time for the current movement
@@ -136,8 +138,13 @@ class MovingState(State):
         Assumes a constant speed. The two rooms need to be defined
         """
         if self.current_room and self.next_room:
+
             distance = self.current_room.distance(self.next_room)
             speed = self.automaton.action_manager.default_lin_vel
+            print('[INFO] Computed distance: ' + str(distance))
+            print('[INFO] Computed speed: ' + str(speed))
+            print('[INFO] Computed time: ' + str(distance / speed))
+
             return distance / speed
         return 0
 
@@ -154,20 +161,32 @@ class MovingState(State):
         # Resume the movement if was paused, start a movement if it was not already started
         if self.remaining_time is None:
             self.remaining_time = self.compute_travel_time()
-            print("[INFO] Entering " + str(self.name) + ". " +
-                  "Moving from " + str(self.current_room) + " to " + str(self.next_room) + ". " +
-                  "Remaining time: " + str(self.remaining_time)
-            )
 
+        print("[INFO] Entering " + str(self.name) + ". " +
+              "Moving from " + str(self.current_room) + "(" + str(self.current_room.x) + ", " + str(self.current_room.y) + ")" +
+              " to " + str(self.next_room) + "(" + str(self.next_room.x) + ", " + str(self.next_room.y) + "). " +
+              "Remaining time: " + str(self.remaining_time)
+        )
+
+        pos = self.automaton.action_manager.mo_service.getRobotPosition(False)
+        print("[INFO] Position: " + str(pos))
+
+        robot_pose = self.automaton.action_manager.mo_service.getRobotPosition(False)
+        desired_theta = math.atan2(self.next_room.y - robot_pose[1], self.next_room.x - robot_pose[0])
+        distance = desired_theta - robot_pose[2]
+        self.automaton.action_manager.mo_service.moveTo(0, 0, distance)
         self.start_timer(self.remaining_time)
 
-        v_x, v_y, omega_z = self.compute_velocity(0.7, 0.3)
-        self.automaton.action_manager.mo_service.move(v_x, v_y, omega_z)
+        v_x, v_y = self.compute_linear_velocity_vector()
+        self.automaton.action_manager.mo_service.move(v_x, v_y, 0)
 
     def on_event(self, event):
         super(MovingState, self).on_event(event)
 
         if event == 'room_reached':
+
+            print('[INFO] Fired room_reached event')
+            print(time.time())
 
             # Go to the next room
             self.path_index += 1
@@ -191,6 +210,8 @@ class MovingState(State):
 
         elif event == 'hand_released':
 
+            print('[INFO] Fired hand_released event')
+            print(time.time())
             # Stop the robot
             self.automaton.action_manager.mo_service.stopMove()
             print("[INFO] Stopping the robot")
@@ -210,44 +231,56 @@ class MovingState(State):
         Start a timer to simulate movement and trigger the `room_reached` event.
         """
 
+        print('[INFO] start timer')
+
         self.start_time = time.time()
 
         def trigger_event():
-            print("[INFO] Triggering `room_reached` event.")
             self.on_event("room_reached")
 
         self.move_timer = threading.Timer(duration, trigger_event)
         self.move_timer.start()
 
-    def compute_velocity(self, v_max, omega_max):
+    def compute_linear_velocity_vector(self):
+        """
+        We have the magnitude of the velocity (e.g. 0.7 m/s) and we want
+        to compute the velocity vector based on the deltas in x, y directions
+        """
+
+        v_max = self.automaton.action_manager.default_lin_vel
+
+        x_r, y_r, theta_r = self.automaton.action_manager.mo_service.getRobotPosition(False)
 
         # Unpack current and next points
-        x_c, y_c = self.current_room.x, self.current_room.y
         x_n, y_n = self.next_room.x, self.next_room.y
 
         # Compute the differences
-        delta_x = x_n - x_c
-        delta_y = y_n - y_n
-        theta = math.atan2(delta_y, delta_x)
-        d = math.sqrt(delta_x ** 2 + delta_y ** 2)
+        dx = x_n - x_r
+        dy = y_n - y_r
+
+        d = math.sqrt(dx ** 2 + dy ** 2)
+
+        print('[INFO] delta_x: ' + str(dx))
+        print('[INFO] delta_y: ' + str(dy))
+        print('[INFO] d: ' + str(d))
+
+        dx_robot = math.cos(-theta_r) * dx - math.sin(-theta_r) * dy
+        dy_robot = math.sin(-theta_r) * dx + math.cos(-theta_r) * dy
 
         # Linear velocities
         if d > 0:
-            v_x = v_max * (delta_x / d)
-            v_y = v_max * (delta_y / d)
+            # v_x = v_max * (delta_x / d)
+            # v_y = v_max * (delta_y / d)
+            v_x = dx_robot
+            v_y = dy_robot
         else:
             v_x = 0
             v_y = 0
 
-        # Angular velocity
-        # TODO fix this
-        delta_theta = 0
+        print('[INFO] v_x: ' + str(v_x))
+        print('[INFO] v_y: ' + str(v_y))
 
-        # Normalize to [-pi, pi]
-        delta_theta = (delta_theta + math.pi) % (2 * math.pi) - math.pi
-        omega_z = max(-omega_max, min(delta_theta, omega_max))
-
-        return v_x, v_y, omega_z
+        return v_x, v_y
 
 class QuitState(State):
 
