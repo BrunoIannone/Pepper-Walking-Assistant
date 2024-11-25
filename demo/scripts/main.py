@@ -65,7 +65,7 @@ if __name__ == "__main__":
     print("[INFO] Setting up action manager")
 
     map_path = get_path('static/maps/map.txt')
-    positionManager = PositionManager(map_path)
+    position_manager = PositionManager(map_path)
 
     users_database_path = get_path('static/users/users.txt')
     print("[INFO] Restoring users from: " + users_database_path)
@@ -106,7 +106,6 @@ if __name__ == "__main__":
             print("[INFO] Routine canceled during language selection")
             mws.run_interaction(action_manager.failure)
             exit(1)
-            
 
         active_user = User(len(user_manager.users), "", alevel, language)
 
@@ -128,23 +127,17 @@ if __name__ == "__main__":
 
     # Create custom greeting action file
     action_manager.create_custom_greeting(active_user.username, alevel)
+    print('[INFO] Created custom greeting for user ' + active_user.username + " with alevel " + str(active_user.alevel))
 
     # Ask for help
     if alevel == 0:  # Blindness
 
+        print('[INFO] Blind procedure start')
+
         mws.run_interaction(action_manager.custom_greeting)
         time.sleep(2)
         mws.run_interaction(action_manager.blind_ask_help)
-
-        status = action_manager.check_status()
-        print('[INFO] User response: ' + status)
-        if status != "failure":
-            print("[INFO] Blind help procedure starting")
-            # status could be 'A', ..., 'E', or something else. The room mapper will tell if it is a valid room
-            guide_me(active_user, args.current_room, status, mws, action_manager, positionManager, wtime=args.wtime)
-        else:
-            print("[INFO] Blind help procedure aborted")
-            exit(1)
+        print('[INFO] Exited blind procedure')
 
     elif alevel == 1:  # Deafness
 
@@ -152,11 +145,37 @@ if __name__ == "__main__":
         time.sleep(2)
         mws.run_interaction(action_manager.deaf_ask_help)
 
-        status = action_manager.check_status()
-        print('[INFO] User response: ' + status)
-        if status != "failure":
-            print("[INFO] Deaf help procedure starting")
-            guide_me(active_user, args.current_room, status, mws, action_manager, positionManager, wtime=args.wtime)
+        q = action_manager.check_status()
+        print('[INFO] User response: ' + q)
+
+        print('[INFO] File content:')
+        with open("/home/robot/playground/outcome.txt", "r") as file:
+            for line in file:
+                print('\t\t' + line)
+
+        if q == 'yes':
+            mws.run_interaction(action_manager.deaf_agree)
+
+            print('[INFO] File content:')
+            with open("/home/robot/playground/outcome.txt", "r") as file:
+                for line in file:
+                    print('\t\t' + line)
+
+            dest = action_manager.check_status()
+            print('[INFO] User chose destination: ' + dest)
+
+            print('[INFO] File content:')
+            with open("/home/robot/playground/outcome.txt", "r") as file:
+                for line in file:
+                    print('\t\t' + line)
+
+            if dest in ['A', 'B', 'C', 'D', 'E']:
+                print("[INFO] Deaf help procedure starting")
+                # status could be 'A', ..., 'E', or something else. The room mapper will tell if it is a valid room
+                guide_me(active_user, args.current_room, dest, mws, action_manager, position_manager, wtime=args.wtime)
+            else:
+                print("[INFO] Deaf help procedure aborted")
+                exit(1)
         else:
             print("[INFO] Deaf help procedure aborted")
             exit(1)

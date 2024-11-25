@@ -1,5 +1,4 @@
 import os
-import math
 import time
 
 
@@ -51,12 +50,11 @@ class ActionManager:
                     ----
                     GESTURE
                     <*,*,*,*>: animations/Stand/Gestures/Hey_1
-                    ----""".format((user_name))
+                    ----""".format(user_name)
 
             file.write(contenuto)
 
     def check_status(self):
-        status = None
         with open("/home/robot/playground/outcome.txt", "r") as file:
             status = file.readline().strip()
         return str(status).strip()
@@ -65,21 +63,52 @@ class ActionManager:
         im.setProfile(['*', '*', '*', '*'])
 
     def set_profile_it(self):
-        #im.init()
+        # im.init()
         im.setProfile(['*', '*', 'it', '*'])
 
     def custom_greeting(self):
         im.execute("custom_greeting")
 
+    # ----------------------------- Blind interaction ---------------------------- #
+
+    def blind_ask_help(self):
+
+        q = im.ask('blind_ask_help')
+        if q == 'yes':
+            dest = im.ask('blind_agree')
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write(dest)
+            return dest
+        else:
+            im.execute('blind_disagree')
+            with open("/home/robot/playground/outcome.txt","w") as file:
+                file.write("failure")
+        return "failure"
+
+    def blind_agree(self):
+        q = im.ask('blind_agree', timeout=999)
+        with open("/home/robot/playground/outcome.txt", "w") as file:
+            file.write(q)
+
+    def blind_ask_cancel(self):
+        q = im.ask('blind_ask_cancel', timeout=999)
+        with open("/home/robot/playground/outcome.txt","w") as file:
+            file.write(q)
+
+    def blind_ask_call(self):
+        q = im.ask('blind_ask_call', timeout=999)
+        with open("/home/robot/playground/outcome.txt", "w") as file:
+            file.write(q)
+
+    # ----------------------------- Deaf interaction ----------------------------- #
+
     def deaf_ask_help(self):
         q = im.ask("deaf_ask_help", timeout=999)
-        print("RISPOSTA " + q)
         if q != 'timeout':
             if q == 'yes':
                 required_dest = im.ask('deaf_agree', timeout=999)
                 with open("/home/robot/playground/outcome.txt","w") as file:
                     file.write(required_dest)
-
             else:
                 im.execute('deaf_disagree')
                 with open("/home/robot/playground/outcome.txt","w") as file:
@@ -88,31 +117,10 @@ class ActionManager:
                 time.sleep(5)
                 im.init()
 
-    def blind_ask_help(self):
-        q = im.ask('blind_ask_help', timeout=999)
-        print('[BAH] blind_ask_help response: ' + str(q))
-        if q == 'yes':
-            required_dest = im.ask('blind_agree', timeout=999)
-            print('[BAH] blind_agree response: ' + str(required_dest))
-            with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write(required_dest)
-
-        else:
-            im.execute('blind_disagree')
-            with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write("failure")
-
-            time.sleep(5)
-            im.init()
-
-    def blind_ask_cancel(self):
-        q = im.ask('blind_ask_cancel', timeout=999)
-        if q == 'yes':
-            with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write('result_yes')
-        else:
-            with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write('result_no')
+    def deaf_agree(self):
+        q = im.execute('deaf_agree', timeout=999)
+        with open("/home/robot/playground/outcome.txt", "w") as file:
+            file.write(q)
 
     def deaf_ask_cancel(self):
         q = im.ask('deaf_ask_cancel', timeout=999)
@@ -123,9 +131,9 @@ class ActionManager:
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_no')
 
-    def blind_ask_call(self):
-        q = im.ask('blind_ask_call', timeout=999)
-        if q == 'yes':
+    def deaf_ask_call(self):
+        q = im.ask('deaf_ask_call', timeout=999)
+        if q == 'agree':
             with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write('result_yes')
         else:
@@ -165,25 +173,6 @@ class ActionManager:
     def right_deaf_walk_hold_hand(self):
         im.execute('right_deaf_walk_hold_hand')
 
-    def blind_agree(self):
-        q = im.execute('blind_agree', timeout=999)
-        with open("/home/robot/playground/outcome.txt", "w") as file:
-            file.write(q)
-
-    def deaf_agree(self):
-        q = im.execute('deaf_agree', timeout=999)
-        with open("/home/robot/playground/outcome.txt", "w") as file:
-            file.write(q)
-
-    def deaf_ask_call(self):
-        q = im.ask('deaf_ask_call', timeout=999)
-        if q == 'agree':
-            with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write('result_yes')
-        else:
-            with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write('result_no')
-
     def wait_for_human(self):
         stop_detection = False
         is_human_detected = False
@@ -220,77 +209,6 @@ class ActionManager:
         modality = im.ask("ask_language", timeout=999)
         with open("/home/robot/playground/outcome.txt","w") as file:
                 file.write(str(modality).strip())
-
-    def set_speed(self, lin_vel, ang_vel, dtime):
-        self.mo_service.move(lin_vel, 0, ang_vel)
-        time.sleep(dtime)
-        self.mo_service.stopMove()
-
-    """
-    def move_to(self, target_x, target_y):
-        try:
-            current_x, current_y, current_theta = self.mo_service.getRobotPosition(True)
-            delta_x = target_x - current_x
-            delta_y = target_y - current_y
-            theta = math.atan2(delta_y, delta_x)
-
-            self.mo_service.moveTo(current_x, current_y, theta)
-            self.mo_service.moveTo(delta_x, delta_y, theta)
-
-            # TODO remove this
-            success = True
-
-            if success:
-                print("[INFO] Moved to position: ({}, {})".format(target_x, target_y))
-            else:
-                print("[INFO] Navigation failed or was interrupted")
-            return success
-        except Exception as e:
-            print("[ERROR] Failed to move: {}".format(e))
-            return False
-    """
-
-    def move_to(self, target_x, target_y):
-        try:
-            current_x, current_y, current_theta = self.mo_service.getRobotPosition(True)
-
-            delta_x = target_x - current_x
-            delta_y = target_y - current_y
-            target_theta = math.atan2(delta_y, delta_x)
-
-            distance = math.sqrt(delta_x ** 2 + delta_y ** 2)
-            angle_diff = target_theta - current_theta
-
-            # Normalize angle to [-pi, pi]
-            while angle_diff > math.pi:
-                angle_diff -= 2 * math.pi
-            while angle_diff < -math.pi:
-                angle_diff += 2 * math.pi
-
-            if abs(angle_diff) > 0.1:
-                rotation_time = abs(angle_diff / self.default_ang_vel)
-                self.mo_service.move(0, 0, math.copysign(self.default_ang_vel, angle_diff))
-                time.sleep(rotation_time)
-                self.mo_service.stopMove()
-
-
-            if distance > 0.1:
-                movement_time = distance / self.default_lin_vel
-                self.mo_service.move(self.default_lin_vel, 0, 0)
-                time.sleep(movement_time)
-                self.mo_service.stopMove()
-
-
-            final_x, final_y, _ = self.mo_service.getRobotPosition(True)
-            print("Moved from ({:.2f}, {:.2f}) to ({:.2f}, {:.2f})"
-                  .format(current_x, current_y, final_x, final_y))
-
-            return True
-
-        except Exception as e:
-            print("[ERROR] Failed to move: {}".format(e))
-            self.mo_service.stopMove()
-            return False
 
     def stop_motion(self):
         try:
