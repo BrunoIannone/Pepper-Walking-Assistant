@@ -1,3 +1,3 @@
 0, Daniel, 0, it
 1, Iacopo, 1, en
-2, Bruno, 1, en
+2, Bruno, 1, it

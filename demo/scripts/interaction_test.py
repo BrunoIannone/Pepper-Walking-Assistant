@@ -35,12 +35,31 @@ class ActionManager:
         im.setProfile(['*', '*', 'it', '*'])
 
     def interaction_register_user(self):
-        pass
+
+        # Default values
+        line = ""
+
+        modality = im.ask("record_user", timeout=999)
+        if modality == "touch":
+            line += "1"
+        elif modality == "vocal":
+            line += "0"
+        else:
+            line = "failure"
+
+        language = im.ask("ask_language", timeout=999)
+        if language == "failure":
+            line = "failure"
+        else:
+            line += (", " + language)
+
+        with open('/home/robot/playground/outcome.txt', 'w') as file:
+            file.write(line)
 
     def interaction_blind_assist(self):
-        user_response = im.ask('blind_ask_help')
+        user_response = im.ask('blind_ask_help', timeout=999)
         if user_response == 'yes':
-            dest = im.ask('blind_agree')
+            dest = im.ask('blind_agree', timeout=999)
             with open('/home/robot/playground/outcome.txt', 'w') as file:
                 file.write(dest)
         else:
@@ -48,9 +67,9 @@ class ActionManager:
                 file.write('failure')
 
     def interaction_deaf_assist(self):
-        user_response = im.ask('deaf_ask_help')
+        user_response = im.ask('deaf_ask_help', timeout=999)
         if user_response == 'yes':
-            dest = im.ask('deaf_agree')
+            dest = im.ask('deaf_agree', timeout=999)
             with open('/home/robot/playground/outcome.txt', 'w') as file:
                 file.write(dest)
         else:

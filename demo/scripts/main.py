@@ -22,6 +22,15 @@ from src.users.user import User, BLIND
 from src.guide_me import guide_me
 from src.utils.paths import get_path
 
+
+def is_file_empty(file_path):
+    try:
+        return os.path.isfile(file_path) and os.path.getsize(file_path) == 0
+    except Exception as e:
+        print("An error occurred: " + str(e))
+        return False
+
+
 if __name__ == "__main__":
 
     # ----------------------------- Argument parsing ----------------------------- #
@@ -77,37 +86,28 @@ if __name__ == "__main__":
 
     if args.uid not in user_manager:
 
-        # Debug, get random user
-        # active_user = user_manager.get_random_user()
+        mws.run_interaction(action_manager.interaction_register_user)
 
-        # Create a temporary user
+        file_path = '/home/robot/playground/outcome.txt'
+        while is_file_empty(file_path):
+            time.sleep(0.01)
 
-        mws.run_interaction(action_manager.record_user)
-        status = action_manager.check_status()
-        if (status != "failure"):
-            if (status == "vocal"):
-                alevel = 0
-            else:
-                alevel = 1
+        # Take the content of the file
+        user_data = ""
+        with open(file_path, "r") as file:
+            lines = file.readlines()
+            if len(lines) > 0:
+                user_data = lines[0]
+
+        user_tokens = user_data.split()
+        if len(user_tokens) > 1:
+            alevel = int(user_tokens[0])
+            language = user_tokens[1]
+            active_user = User(len(user_manager.users), "Unknown", alevel, language)
+            print('[INFO] User created: ' + str(active_user))
         else:
-            print("[INFO] Routine canceled during modality selection")
-            mws.run_interaction(action_manager.failure)
+            print('[INFO] Unable to create user: invalid data')
             exit(1)
-
-        mws.run_interaction(action_manager.ask_language)
-        status = action_manager.check_status()
-        print("[INFO] Status: " + status)
-        if (status != "failure"):
-            if (status == "english"):
-                language = "en"
-            else:
-                language = "it"
-        else:
-            print("[INFO] Routine canceled during language selection")
-            mws.run_interaction(action_manager.failure)
-            exit(1)
-
-        active_user = User(len(user_manager.users), "", alevel, language)
 
     else:
         # User in db
@@ -129,56 +129,30 @@ if __name__ == "__main__":
     action_manager.create_custom_greeting(active_user.username, alevel)
     print('[INFO] Created custom greeting for user ' + active_user.username + " with alevel " + str(active_user.alevel))
 
-    # Ask for help
-    if alevel == 0:  # Blindness
+    if alevel == 0:
+        mws.run_interaction(action_manager.interaction_blind_assist)
+    elif alevel == 1:
+        mws.run_interaction(action_manager.interaction_deaf_assist)
+    else:
+        raise ValueError("Invalid alevel: " + alevel)
 
-        print('[INFO] Blind procedure start')
+    file_path = '/home/robot/playground/outcome.txt'
+    while is_file_empty(file_path):
+        print("[INFO] Locked here")
+        time.sleep(0.01)
 
-        mws.run_interaction(action_manager.custom_greeting)
-        time.sleep(2)
-        mws.run_interaction(action_manager.blind_ask_help)
-        print('[INFO] Exited blind procedure')
+    # Take the content of the file
+    dest = ""
+    with open(file_path, "r") as file:
+        lines = file.readlines()
+        dest = lines[0]
 
-    elif alevel == 1:  # Deafness
+    if dest == 'failure':
+        print('[INFO] Help procedure aborted')
+        exit(1)
+    else:
+        guide_me(active_user, args.current_room, dest, mws, action_manager, position_manager, wtime=args.wtime)
 
-        mws.run_interaction(action_manager.custom_greeting)
-        time.sleep(2)
-        mws.run_interaction(action_manager.deaf_ask_help)
-
-        q = action_manager.check_status()
-        print('[INFO] User response: ' + q)
-
-        print('[INFO] File content:')
-        with open("/home/robot/playground/outcome.txt", "r") as file:
-            for line in file:
-                print('\t\t' + line)
-
-        if q == 'yes':
-            mws.run_interaction(action_manager.deaf_agree)
-
-            print('[INFO] File content:')
-            with open("/home/robot/playground/outcome.txt", "r") as file:
-                for line in file:
-                    print('\t\t' + line)
-
-            dest = action_manager.check_status()
-            print('[INFO] User chose destination: ' + dest)
-
-            print('[INFO] File content:')
-            with open("/home/robot/playground/outcome.txt", "r") as file:
-                for line in file:
-                    print('\t\t' + line)
-
-            if dest in ['A', 'B', 'C', 'D', 'E']:
-                print("[INFO] Deaf help procedure starting")
-                # status could be 'A', ..., 'E', or something else. The room mapper will tell if it is a valid room
-                guide_me(active_user, args.current_room, dest, mws, action_manager, position_manager, wtime=args.wtime)
-            else:
-                print("[INFO] Deaf help procedure aborted")
-                exit(1)
-        else:
-            print("[INFO] Deaf help procedure aborted")
-            exit(1)
-
-    app.run() ##TODO check if relevant
-    
+# TODO Bruno > check if relevant
+# TODO Daniel & Iacopo > yes, totally relevant
+app.run()

@@ -6,6 +6,6 @@ TTS
 <*,*,*,*>:  Which is your destination?
 ----
 ASR 
-<*,*,it,*>:  {'A': ['destinazione 1', 'A', 'a'], 'B': ['destinazione 2', 'B', 'b'],'C': ['destinazione 3', 'C', 'c'],'D': ['destinazione 4', 'D', 'd'],'E': ['destinazione 5', 'E', 'e'], 'failure':['cancella','esci','annulla','abbandona']}
-<*,*,*,*>:  {'A': ['destination 1', 'A', 'a'], 'B': ['destination 2', 'B', 'b'],'C': ['destination 3', 'C', 'c'],'D': ['destination 4', 'D', 'd'],'E': ['destination 5', 'E', 'e'], 'failure': ['cancel', 'abort','exit']}
+<*,*,it,*>:  {'B': ['destinazione 2', 'B', 'b'],'C': ['destinazione 3', 'C', 'c'],'D': ['destinazione 4', 'D', 'd'],'E': ['destinazione 5', 'E', 'e'], 'failure':['cancella','esci','annulla','abbandona']}
+<*,*,*,*>:  {'B': ['destination 2', 'B', 'b'],'C': ['destination 3', 'C', 'c'],'D': ['destination 4', 'D', 'd'],'E': ['destination 5', 'E', 'e'], 'failure': ['cancel', 'abort','exit']}
 ----

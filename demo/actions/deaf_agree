@@ -9,9 +9,6 @@ TEXT
 <*,*,*,*>:  Choose your destination!
 ----
 BUTTONS
-A
-<*,*,it,*>: A
-<*,*,*,*>:  A
 B
 <*,*,it,*>: B
 <*,*,*,*>:  B

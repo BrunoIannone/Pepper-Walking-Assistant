@@ -69,10 +69,41 @@ class ActionManager:
     def custom_greeting(self):
         im.execute("custom_greeting")
 
+    def interaction_register_user(self):
+
+        # Default values
+        line = ""
+
+        modality = im.ask("record_user", timeout=999)
+        if modality == "touch":
+            line += "1"
+        elif modality == "vocal":
+            line += "0"
+        else:
+            line = "failure"
+
+        language = im.ask("ask_language", timeout=999)
+        if language == "failure":
+            line = "failure"
+        else:
+            line += (", " + language)
+
+        with open('/home/robot/playground/outcome.txt', 'w') as file:
+            file.write(line)
+
     # ----------------------------- Blind interaction ---------------------------- #
 
-    def blind_ask_help(self):
+    def interaction_blind_assist(self):
+        user_response = im.ask('blind_ask_help', timeout=999)
+        if user_response == 'yes':
+            dest = im.ask('blind_agree', timeout=999)
+            with open('/home/robot/playground/outcome.txt', 'w') as file:
+                file.write(dest)
+        else:
+            with open('/home/robot/playground/outcome.txt', 'w') as file:
+                file.write('failure')
 
+    def blind_ask_help(self):
         q = im.ask('blind_ask_help')
         if q == 'yes':
             dest = im.ask('blind_agree')
@@ -101,6 +132,16 @@ class ActionManager:
             file.write(q)
 
     # ----------------------------- Deaf interaction ----------------------------- #
+
+    def interaction_deaf_assist(self):
+        user_response = im.ask('deaf_ask_help', timeout=999)
+        if user_response == 'yes':
+            dest = im.ask('deaf_agree', timeout=999)
+            with open('/home/robot/playground/outcome.txt', 'w') as file:
+                file.write(dest)
+        else:
+            with open('/home/robot/playground/outcome.txt', 'w') as file:
+                file.write('failure')
 
     def deaf_ask_help(self):
         q = im.ask("deaf_ask_help", timeout=999)
