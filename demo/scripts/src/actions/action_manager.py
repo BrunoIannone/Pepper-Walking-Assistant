@@ -13,6 +13,12 @@ class ActionManager:
         self.ap_service = session.service("ALAnimationPlayer")
         self.mo_service = session.service("ALMotion")
         self.me_service = session.service("ALMemory")
+        self.to_service = session.service("ALTouch")
+
+    def is_head_touched(self):
+        sensors = self.to_service.getStatus()
+        middle_touch = next((s["value"] for s in sensors if s["name"] == "Head/Touch/Middle"), None)
+        return middle_touch == 1.0
 
     def get_actions_path(self):
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../../actions/")

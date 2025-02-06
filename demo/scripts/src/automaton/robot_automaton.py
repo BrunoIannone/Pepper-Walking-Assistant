@@ -31,8 +31,6 @@ class SteadyState(TimeoutState):
         elif event == 'time_elapsed':
             self.automaton.change_state('quit_state')
 
-
-
 class GoalState(TimeoutState):
 
     def __init__(self, automaton):
@@ -104,7 +102,6 @@ class HoldHandState(TimeoutState):
         elif event == 'time_elapsed':
             self.automaton.change_state('quit_state')
 
-
 class AskState(TimeoutState):
 
     def __init__(self, automaton):
@@ -123,7 +120,11 @@ class AskState(TimeoutState):
 
         result = self.automaton.action_manager.check_status()
         print('[INFO] Obtained response: ' + result)
-        self.automaton.on_event(result)  # Can be 'result_yes' or 'result_no'
+
+        if result == "failure":
+            self.automaton.on_event("result_no")
+        else:
+            self.automaton.on_event("result_yes")
 
     def on_event(self, event):
         super(AskState, self).on_event(event)
@@ -136,6 +137,110 @@ class AskState(TimeoutState):
         elif event == 'time_elapsed':
             self.automaton.change_state('quit_state')
 
+class MovingState(State):
+
+    def __init__(self, automaton, eps=0.2, lin_vel=0.15):
+        super(MovingState, self).__init__('moving_state', automaton)
+
+        self.current_room = None
+        self.next_room = None
+        self.path_index = 0
+
+        self.lin_vel = lin_vel
+        self.eps = eps
+
+    @classmethod
+    def distance(cls, curr, target):
+        delta_x = target[0] - curr[0]
+        delta_y = target[1] - curr[1]
+        return (delta_x ** 2 + delta_y ** 2) ** 0.5
+
+    @classmethod
+    def compute_velocity(cls, x_curr, y_curr, x_target, y_target, speed=1.0):
+
+        delta_x = x_target - x_curr
+        delta_y = y_target - y_curr
+        magnitude = (delta_x ** 2 + delta_y ** 2) ** 0.5
+
+        if magnitude == 0:
+            return 0, 0  # Already at the target
+
+        # Normalize and scale
+        x_vel = (delta_x / magnitude) * speed
+        y_vel = (delta_y / magnitude) * speed
+
+        # Ensure speed is within (0, 1)
+        x_vel = max(min(x_vel, 1), -1)
+        y_vel = max(min(y_vel, 1), -1)
+
+        return x_vel, y_vel
+
+    def on_enter(self):
+        super(MovingState, self).on_enter()
+
+        if self.automaton.disability == "blind":
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_walking)
+        else:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_walking)
+
+        self.current_room = self.automaton.position_manager.path[self.path_index]
+        self.next_room = (
+            self.automaton.position_manager.path[self.path_index + 1]
+            if self.path_index + 1 < len(self.automaton.position_manager.path)
+            else None
+        )
+
+        curr = self.current_room
+        target = self.next_room
+        x_vel, y_vel = self.compute_velocity(curr.x, curr.y, target.x, target.y)
+        self.automaton.action_manager.mo_service.moveToward(x_vel, y_vel, 0)
+
+        position = (curr.x, curr.y)
+        goal = (target.x, target.y)
+        head_touched = False
+        while self.distance(position, goal) > self.eps and head_touched:
+
+            head_touched = self.automaton.action_manager.is_head_touched()
+            if not head_touched:
+                self.automaton.change_state('head_released')
+
+            position_arr = self.automaton.action_manager.mo_service.getRobotPosition(False)
+            position = (position_arr[0], position_arr[1])
+            print("Current position: ", position)
+
+    def on_event(self, event):
+        super(MovingState, self).on_event(event)
+
+        if event == 'room_reached':
+
+            print('[INFO] Fired room_reached event')
+            print(time.time())
+
+            # Go to the next room
+            self.path_index += 1
+
+            # Check if we reached the goal (we are now currently on the last position in the path)
+            if self.path_index == len(self.automaton.position_manager.path) - 1:
+
+                # current the robot
+                print("[INFO] currentping the robot")
+                self.automaton.action_manager.mo_service.moveToward(0, 0, 0)
+
+                print("[INFO] Path completed. Transitioning to GoalState.")
+                self.automaton.change_state('goal_state')
+
+            else:
+                # Re-enter the same state
+                self.automaton.change_state('moving_state')
+
+        elif event == 'head_released':
+
+            print('[INFO] Fired head_released event')
+
+            # Stop the robot
+            self.automaton.action_manager.mo_service.stopMove()
+
+            self.automaton.change_state('ask_state')
 
 class RobotAutomaton(FiniteStateAutomaton):
 
