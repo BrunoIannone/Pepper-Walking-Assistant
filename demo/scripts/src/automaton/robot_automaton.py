@@ -178,6 +178,8 @@ class MovingState(State):
     def on_enter(self):
         super(MovingState, self).on_enter()
 
+        print("[INFO] Entering moving state")
+
         if self.automaton.disability == "blind":
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_walking)
         else:
@@ -207,6 +209,8 @@ class MovingState(State):
             position_arr = self.automaton.action_manager.mo_service.getRobotPosition(False)
             position = (position_arr[0], position_arr[1])
             print("Current position: ", position)
+
+        self.automaton.change_state("room_reached")
 
     def on_event(self, event):
         super(MovingState, self).on_event(event)
