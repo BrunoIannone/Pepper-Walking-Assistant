@@ -41,8 +41,6 @@ if __name__ == "__main__":
                         help="Naoqi port number")
     parser.add_argument("--current_room", type=str, default="Lobby",
                         help="ID of the room you are currently in")
-    parser.add_argument("--target_room", type=str, default="Office",
-                        help="ID of the room you want to go")
     parser.add_argument("--wtime", type=int, default=60,
                         help="Number of seconds to wait with the hand raised before canceling the procedure")
     parser.add_argument("--uid", type=int, default=-1,
@@ -145,30 +143,90 @@ if __name__ == "__main__":
     else:
         raise ValueError("Invalid disability: " + active_user.disability)
 
+    """
     file_path = '/home/robot/playground/outcome.txt'
     while is_file_empty(file_path):
         time.sleep(0.01)
 
     # Take the content of the file
-    dest = ""
+    result = ""
     with open(file_path, "r") as file:
         lines = file.readlines()
-        dest = lines[0]
+        result = lines[0]
     print("[INFO] User replied: " + dest)
+    """
+    result = action_manager.check_status()
 
-    if dest == 'failure':
+    if result == 'failure':
         print('[INFO] Help procedure aborted')
+
+        if active_user.disability == "blind":
+            mws.run_interaction(action_manager.blind_disagree)
+        else:
+            mws.run_interaction(action_manager.deaf_disagree)
+
+        mws.run_interaction(action_manager.failure)
+
         exit(1)
 
     else:
 
-        """
         # Disable security
-        action_manager.mo_service.setExternalCollisionProtectionEnabled("All", False)
+        # action_manager.mo_service.setExternalCollisionProtectionEnabled("All", False)
 
-        guide_me(active_user, args.current_room, dest, mws, action_manager, position_manager, wtime=args.wtime)
-        """
+        # guide_me(active_user, args.current_room, dest, mws, action_manager, position_manager, wtime=args.wtime)
 
-# TODO Bruno > check if relevant
-# TODO Daniel & Iacopo > yes, totally relevant
+        current_room = args.current_room
+        target_room = result
+
+        # Check if the destination is a valid room
+        if not position_manager.is_valid(current_room):
+            print("[ERROR] Invalid current room: " + current_room)
+            exit(1)
+        if not position_manager.is_valid(target_room):
+            print("[ERROR] Invalid target room: " + target_room)
+            exit(1)
+
+        print("[INFO] Current room: " + current_room)
+        print("[INFO] Target room: " + target_room)
+
+        # Check if we are in the target room
+        if current_room == target_room:
+            print("[INFO] We already are in the target room: " + current_room)
+            exit(1)
+
+        # Go on guiding the user to the target
+
+        path = position_manager.compute_path(current_room, target_room, active_user.disability)
+
+        if len(path) == 0:
+
+            print("[INFO] No route to " + target_room)
+
+            if active_user.disability == "blind":  # Blindness
+                mws.run_interaction(action_manager.blind_ask_call)
+            else:  # Deafness
+                mws.run_interaction(action_manager.deaf_ask_call)
+
+            status = action_manager.check_status()
+            if status != "failure":
+                print("[INFO] Performing call to room " + target_room)
+
+                if active_user.disability == "blind":
+                    mws.run_interaction(action_manager.blind_call)
+                else:
+                    mws.run_interaction(action_manager.deaf_call)
+
+            else:
+                print("[INFO] User declined the call.")
+
+                if active_user.disability == "blind":
+                    mws.run_interaction(action_manager.blind_disagree)
+                else:
+                    mws.run_interaction(action_manager.deaf_disagree)
+
+                mws.run_interaction(action_manager.failure)
+                exit(1)
+
+
 app.run()

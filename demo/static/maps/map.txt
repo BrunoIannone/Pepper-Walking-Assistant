@@ -2,7 +2,7 @@ Lobby 0 1
 Cafe 0 2
 Library 0 3
 Office 0 4
-Garden -99 -99
+Secretariat -99 -99
 
 Lobby Cafe 3 1
 Lobby Library 3 0

@@ -11,10 +11,7 @@ TEXT
 BUTTONS
 agree
 <*,*,*,*>: Yes
-no
-<*,*,*,*>: No
 failure
-<*,*,it,*>: X
-<*,*,*,*>:  X
+<*,*,*,*>: No
 ----
 

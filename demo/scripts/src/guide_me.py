@@ -4,16 +4,9 @@ import time
 
 def guide_me(user, current_room, target_room, modim_web_server, action_manager, position_manager, wtime=10):
 
-    # Check if the destination is a valid room
-    if not position_manager.is_valid(current_room):
-        print("[ERROR] Invalid current room: " + current_room)
-        exit(1)
-    if not position_manager.is_valid(target_room):
-        print("[ERROR] Invalid target room: " + target_room)
-        exit(1)
 
-    print("[INFO] Going from " + current_room + " to " + target_room)
 
+    """
     path = position_manager.compute_path(current_room, target_room, user.disability)
 
     if len(path) == 0:
@@ -48,3 +41,4 @@ def guide_me(user, current_room, target_room, modim_web_server, action_manager, 
 
         # Start
         robot_automaton.start('steady_state')
+    """
