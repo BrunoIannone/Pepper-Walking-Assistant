@@ -216,7 +216,7 @@ class QuitState(State):
         print('[INFO] Resetting posture')
 
         # Signaling the user we reached the target
-        if self.automaton.alevel == 0:
+        if self.automaton.disability == 0:
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
         else:
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
@@ -226,6 +226,7 @@ class QuitState(State):
         print('[INFO] Releasing resources')
 
         print("[INFO] Done")
+        exit(1)
 
     def on_event(self, event):
         super(QuitState, self)
@@ -261,10 +262,10 @@ class AskState(TimeoutState):
         super(AskState, self).on_enter()
         print("[INFO] Entering Ask State")
 
-        if self.automaton.alevel == 0:  # Blindness
+        if self.automaton.disability == 0:  # Blindness
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_ask_cancel)
             print('[INFO] Asking the user if he wants to cancel the procedure')
-        elif self.automaton.alevel == 1:
+        elif self.automaton.disability == 1:
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_ask_cancel)
             print('[INFO] Showing buttons for the user to choose if he wants to cancel the procedure')
 
@@ -329,7 +330,7 @@ class RobotAutomaton(FiniteStateAutomaton):
         """
 
         # Enable stiffness
-        self.action_manager.mo_service.setStiffnesses(["LArm", "RArm"], 1.0)
+        # self.action_manager.mo_service.setStiffnesses(["LArm", "RArm"], 1.0)
 
         # Perform movement
         for joint_name, joint_value in joint_values.items():
@@ -339,7 +340,7 @@ class RobotAutomaton(FiniteStateAutomaton):
         time.sleep(2)
 
         # Disable arm stiffness during walking
-        self.action_manager.mo_service.setStiffnesses(["LArm", "RArm"], 0.0)
+        # self.action_manager.mo_service.setStiffnesses(["LArm", "RArm"], 0.5)
 
     def instruct(self):
         """

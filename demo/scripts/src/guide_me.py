@@ -14,11 +14,11 @@ def guide_me(user, current_room, target_room, modim_web_server, action_manager, 
 
     print("[INFO] Going from " + current_room + " to " + target_room)
 
-    path = position_manager.compute_path(current_room, target_room, user.alevel)
+    path = position_manager.compute_path(current_room, target_room, user.disability)
 
     if len(path) == 0:
         print("[INFO] No route to " + target_room)
-        if user.alevel == 0:    # Blindness
+        if user.disability == 0:    # Blindness
             modim_web_server.run_interaction(action_manager.blind_ask_call)
         else:                   # Deafness
             modim_web_server.run_interaction(action_manager.deaf_ask_call)
@@ -28,7 +28,7 @@ def guide_me(user, current_room, target_room, modim_web_server, action_manager, 
         if status != "failure":
             print("[INFO] Performing call to room " + target_room)
 
-            if user.alevel == 0:
+            if user.disability == 0:
                 modim_web_server.run_interaction(action_manager.blind_call)
             else:
                 modim_web_server.run_interaction(action_manager.deaf_call)
@@ -44,7 +44,7 @@ def guide_me(user, current_room, target_room, modim_web_server, action_manager, 
 
         # Create the automaton
         robot_automaton = create_automaton(modim_web_server, action_manager, position_manager, wtime=wtime, arm=arm_picked,
-                                           alevel=user.alevel)
+                                           alevel=user.disability)
 
         # Start
         robot_automaton.start('steady_state')

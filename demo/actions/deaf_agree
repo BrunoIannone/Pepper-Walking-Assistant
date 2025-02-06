@@ -9,16 +9,19 @@ TEXT
 <*,*,*,*>:  Choose your destination!
 ----
 BUTTONS
-B
-<*,*,it,*>: B
-<*,*,*,*>:  B
-C
-<*,*,it,*>: C
-<*,*,*,*>:  C
-D
-<*,*,it,*>: D
-<*,*,*,*>:  D
-E
-<*,*,it,*>: E
-<*,*,*,*>:  E
+Lobby
+<*,*,it,*>: Lobby
+<*,*,*,*>:  Lobby
+Cafe
+<*,*,it,*>: Caffetteria
+<*,*,*,*>: Cafe
+Library
+<*,*,it,*>: Biblioteca
+<*,*,*,*>: Library
+Office
+<*,*,it,*>: Ufficio
+<*,*,*,*>: Office
+Secretariat
+<*,*,it,*>: Segreteria
+<*,*,*,*>: Secretariat
 ----

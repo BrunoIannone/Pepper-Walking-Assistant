@@ -1,16 +1,16 @@
-A 0 1
-B 0 2
-C 0 3
-D 0 4
-E -99 -99
+Lobby 0 1
+Cafe 0 2
+Library 0 3
+Office 0 4
+Garden -99 -99
 
-A B 3 1
-A C 3 0
-C A 3 0
-C B 1 0
-C D 4 0
-B A 3 1
-B C 1 0
-B D 2 0
-D B 2 0
-D C 4 0
+Lobby Cafe 3 1
+Lobby Library 3 0
+Library Lobby 3 0
+Library Cafe 1 0
+Library Office 4 0
+Cafe Lobby 3 1
+Cafe Library 1 0
+Cafe Office 2 0
+Office Cafe 2 0
+Office Library 4 0

@@ -11,12 +11,12 @@ TTS
 <*,*,*,*>: Che lingua preferisci: italiano o inglese? Choose your language: Italian or English?
 ----
 ASR 
-<*,*,*,*>:  {'italian': ['italiano', 'italian'], 'english': ['english','inglese'],'failure':['cancel','abort','exit','cancella','esci','annulla','abbandona']}
+<*,*,*,*>:  {'italian': ['italiano', 'it'], 'english': ['english','en'],'failure':['cancel','abort','exit','cancella','esci','annulla','abbandona']}
 ----
 BUTTONS
-italian
+it
 <*,*,*,*>: Italiano
-english
+en
 <*,*,*,*>: English
 failure
 <*,*,it,*>: X

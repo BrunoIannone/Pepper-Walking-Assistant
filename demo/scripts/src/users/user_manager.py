@@ -58,10 +58,10 @@ if __name__ == "__main__":
     # user_manager = UserManager.load("../../../static/users/users.txt")
     user_manager = UserManager()
 
-    user_0 = User(0, "Daniel", 0, 'it')
-    user_1 = User(1, "Iacopo", 1)
-    user_2 = User(2, "Bruno", 1)
-    user_3 = User(3, "unknown", 1)
+    user_0 = User(0, "Daniel", "blind", "it")
+    user_1 = User(1, "Iacopo", "deaf", "en")
+    user_2 = User(2, "Bruno", "deaf", "it")
+    user_3 = User(3, "Pepper", "blind", "en")
     users = [user_0, user_1, user_2]
     user_manager.add_users(users)
 

@@ -15,8 +15,7 @@ class ActionManager:
         self.me_service = session.service("ALMemory")
 
         # Linear and angular velocities
-        self.default_lin_vel = 0.3
-        self.default_ang_vel = 0.7
+        self.default_lin_vel = 0.15
 
     def recognized_user(self):
         return True
@@ -27,7 +26,7 @@ class ActionManager:
     def create_custom_greeting(self, user_name, disability):
         with open(os.path.join(self.get_actions_path(), "custom_greeting"), "w") as file:
 
-            if disability == 0:  # Blind
+            if disability == "blind":  # Blind
                 contenuto = """IMAGE
                     <*, *, *, *>:  img/hello.png
                     ----
@@ -68,6 +67,7 @@ class ActionManager:
 
     def custom_greeting(self):
         im.execute("custom_greeting")
+        time.sleep(2)
 
     def interaction_register_user(self):
 
@@ -76,9 +76,9 @@ class ActionManager:
 
         modality = im.ask("record_user", timeout=999)
         if modality == "touch":
-            line += "1"
+            line += "deaf"
         elif modality == "vocal":
-            line += "0"
+            line += "blind"
         else:
             line = "failure"
 
@@ -86,7 +86,7 @@ class ActionManager:
         if language == "failure":
             line = "failure"
         else:
-            line += (", " + language)
+            line += (" " + language)
 
         with open('/home/robot/playground/outcome.txt', 'w') as file:
             file.write(line)
@@ -167,19 +167,19 @@ class ActionManager:
         q = im.ask('deaf_ask_cancel', timeout=999)
         if q == 'yes':
             with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write('result_yes')
+                file.write('yes')
         else:
             with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write('result_no')
+                file.write('failure')
 
     def deaf_ask_call(self):
         q = im.ask('deaf_ask_call', timeout=999)
         if q == 'agree':
             with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write('result_yes')
+                file.write('yes')
         else:
             with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write('result_no')
+                file.write('failure')
 
     def deaf_call(self):
         im.execute('deaf_call')

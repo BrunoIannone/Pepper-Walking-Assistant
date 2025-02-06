@@ -17,7 +17,7 @@ from ws_client import *
 from src.actions.position_manager import PositionManager
 from src.actions.action_manager import ActionManager
 from src.users.user_manager import UserManager
-from src.users.user import User, BLIND
+from src.users.user import User
 
 from src.guide_me import guide_me
 from src.utils.paths import get_path
@@ -39,9 +39,9 @@ if __name__ == "__main__":
                         help="Robot IP address.  On robot or Local Naoqi: use '127.0.0.1'.")
     parser.add_argument("--pport", type=int, default=9559,
                         help="Naoqi port number")
-    parser.add_argument("--current_room", type=str, default="A",
+    parser.add_argument("--current_room", type=str, default="Lobby",
                         help="ID of the room you are currently in")
-    parser.add_argument("--target_room", type=str, default="D",
+    parser.add_argument("--target_room", type=str, default="Office",
                         help="ID of the room you want to go")
     parser.add_argument("--wtime", type=int, default=60,
                         help="Number of seconds to wait with the hand raised before canceling the procedure")
@@ -73,22 +73,22 @@ if __name__ == "__main__":
     action_manager = ActionManager(session)
     print("[INFO] Setting up action manager")
 
-    map_path = get_path('static/maps/map.txt')
+    map_path = get_path("static/maps/map.txt")
     position_manager = PositionManager(map_path)
 
-    users_database_path = get_path('static/users/users.txt')
+    users_database_path = get_path("static/users/users.txt")
     print("[INFO] Restoring users from: " + users_database_path)
     user_manager = UserManager.load(users_database_path)
 
     print("[INFO] Users database:")
     for user in user_manager.users:
-        print("[INFO] \t" + user.username + " [" + str(user.userid) + "] [" + ("blind" if user.alevel == BLIND else "deaf") + "] [" + user.lang + "]")
+        print("[INFO] \t" + str(user))
 
     if args.uid not in user_manager:
 
         mws.run_interaction(action_manager.interaction_register_user)
 
-        file_path = '/home/robot/playground/outcome.txt'
+        file_path = "/home/robot/playground/outcome.txt"
         while is_file_empty(file_path):
             time.sleep(0.01)
 
@@ -98,47 +98,55 @@ if __name__ == "__main__":
             lines = file.readlines()
             if len(lines) > 0:
                 user_data = lines[0]
+        print("[INFO] User data: " + user_data)
 
         user_tokens = user_data.split()
         if len(user_tokens) > 1:
-            alevel = int(user_tokens[0])
+            alevel = user_tokens[0]
             language = user_tokens[1]
             active_user = User(len(user_manager.users), "Unknown", alevel, language)
             print('[INFO] User created: ' + str(active_user))
+
+            # Dump the new user to file
+            user_manager.add_user(active_user)
+            user_manager.dump(users_database_path)
+            print("[INFO] New user " + active_user.username + " added to the database.")
+
         else:
-            print('[INFO] Unable to create user: invalid data')
+            print("[INFO] Unable to create user: invalid data")
             exit(1)
 
     else:
+
         # User in db
         active_user = user_manager.find_user_by_id(args.uid)
+
     print('[INFO] Active user: ' + active_user.username)
 
-    language = active_user.lang
-    alevel = active_user.alevel
-
     # Set the language profile
-    if language == "en":
+    if active_user.lang == "en":
         mws.run_interaction(action_manager.set_profile_en)
-    elif language == "it":
+    elif active_user.lang == "it":
         mws.run_interaction(action_manager.set_profile_it)
     else:
-        raise ValueError("Invalid language: " + language)
+        raise ValueError("Invalid language: " + active_user.lang)
 
     # Create custom greeting action file
-    action_manager.create_custom_greeting(active_user.username, alevel)
-    print('[INFO] Created custom greeting for user ' + active_user.username + " with alevel " + str(active_user.alevel))
+    action_manager.create_custom_greeting(active_user.username, active_user.disability)
+    print("[INFO] Created custom greeting for user " + active_user.username)
 
-    if alevel == 0:
+    # Call the greeting
+    mws.run_interaction(action_manager.custom_greeting)
+
+    if active_user.disability == "blind":
         mws.run_interaction(action_manager.interaction_blind_assist)
-    elif alevel == 1:
+    elif active_user.disability == "deaf":
         mws.run_interaction(action_manager.interaction_deaf_assist)
     else:
-        raise ValueError("Invalid alevel: " + alevel)
+        raise ValueError("Invalid disability: " + active_user.disability)
 
     file_path = '/home/robot/playground/outcome.txt'
     while is_file_empty(file_path):
-        print("[INFO] Locked here")
         time.sleep(0.01)
 
     # Take the content of the file
@@ -146,12 +154,20 @@ if __name__ == "__main__":
     with open(file_path, "r") as file:
         lines = file.readlines()
         dest = lines[0]
+    print("[INFO] User replied: " + dest)
 
     if dest == 'failure':
         print('[INFO] Help procedure aborted')
         exit(1)
+
     else:
+
+        """
+        # Disable security
+        action_manager.mo_service.setExternalCollisionProtectionEnabled("All", False)
+
         guide_me(active_user, args.current_room, dest, mws, action_manager, position_manager, wtime=args.wtime)
+        """
 
 # TODO Bruno > check if relevant
 # TODO Daniel & Iacopo > yes, totally relevant
