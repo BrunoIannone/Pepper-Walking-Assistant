@@ -14,12 +14,6 @@ class ActionManager:
         self.mo_service = session.service("ALMotion")
         self.me_service = session.service("ALMemory")
 
-        # Linear and angular velocities
-        self.default_lin_vel = 0.15
-
-    def recognized_user(self):
-        return True
-
     def get_actions_path(self):
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../../actions/")
 
@@ -143,6 +137,12 @@ class ActionManager:
     def blind_goal(self):
         im.execute('blind_goal')
 
+    def blind_walk_hold_head(self):
+        im.execute('blind_walk_hold_head')
+
+    def blind_walking(self):
+        im.execute('blind_walking')
+
     # ----------------------------- Deaf interaction ----------------------------- #
 
     def interaction_deaf_assist(self):
@@ -186,28 +186,16 @@ class ActionManager:
     def deaf_goal(self):
         im.execute('deaf_goal')
 
-    # ---------------------------------- General --------------------------------- #
-
-    def blind_walking(self):
-        im.execute('blind_walking')
+    def deaf_walk_hold_head(self):
+        im.execute('deaf_walk_hold_head')
 
     def deaf_walking(self):
         im.execute('deaf_walking')
 
+    # ---------------------------------- General --------------------------------- #
+
     def welcome(self):
         im.execute('welcome')
-
-    def left_blind_walk_hold_hand(self):
-        im.execute('left_blind_walk_hold_hand')
-
-    def right_blind_walk_hold_hand(self):
-        im.execute('right_blind_walk_hold_hand')
-
-    def left_deaf_walk_hold_hand(self):
-        im.execute('left_deaf_walk_hold_hand')
-
-    def right_deaf_walk_hold_hand(self):
-        im.execute('right_deaf_walk_hold_hand')
 
     def failure(self):
         im.init()

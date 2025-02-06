@@ -1,10 +1,9 @@
 import math
 import threading
-from datetime import datetime
 
 from automaton import TimeoutState, State, FiniteStateAutomaton
 from ..utils.limits import joint_limits
-from ..utils.postures import default_posture, left_arm_raised, right_arm_raised
+from ..utils.postures import default_posture
 import time
 
 
@@ -12,14 +11,12 @@ import time
 
 class SteadyState(TimeoutState):
 
-    def __init__(self, automaton, timeout=10):
-        super(SteadyState, self).__init__('steady_state', automaton, timeout=timeout, timeout_event='time_elapsed')
+    def __init__(self, automaton):
+        super(SteadyState, self).__init__('steady_state', automaton, timeout=automaton.timeout, timeout_event='time_elapsed')
 
     def on_enter(self):
         super(SteadyState, self).on_enter()
         print("[INFO] Entering Steady State")
-
-        # Behavior
 
         self.automaton.perform_movement(joint_values=default_posture)
         print('[INFO] Resetting posture')
@@ -27,12 +24,9 @@ class SteadyState(TimeoutState):
         self.automaton.instruct()
         print('[INFO] Giving blind/deaf instructions on how to start')
 
-        self.automaton.perform_movement(joint_values=left_arm_raised if self.automaton.arm == 'Left' else right_arm_raised, speed=0.25)
-        print("[INFO] Raising " + self.automaton.arm.lower() + " hand")
-
     def on_event(self, event):
         super(SteadyState, self).on_event(event)
-        if event == 'hand_touched':
+        if event == 'head_touched':
             self.automaton.change_state('moving_state')
         elif event == 'time_elapsed':
             self.automaton.change_state('quit_state')
@@ -60,7 +54,8 @@ class MovingState(State):
         if self.current_room and self.next_room:
 
             distance = self.current_room.distance(self.next_room)
-            speed = self.automaton.action_manager.default_lin_vel
+            # speed = self.automaton.action_manager.default_lin_vel
+            speed = self.automaton.default_lin_vel
             print('[INFO] Computed distance: ' + str(distance))
             print('[INFO] Computed speed: ' + str(speed))
             print('[INFO] Computed time: ' + str(distance / speed))
@@ -70,6 +65,11 @@ class MovingState(State):
 
     def on_enter(self):
         super(MovingState, self).on_enter()
+
+        if self.automaton.disability == "blind":
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_walking)
+        else:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_walking)
 
         self.current_room = self.automaton.position_manager.path[self.path_index]
         self.next_room = (
@@ -123,14 +123,14 @@ class MovingState(State):
                 print("[INFO] Stopping the robot")
 
                 print("[INFO] Path completed. Transitioning to GoalState.")
-                self.automaton.change_state('quit_state')
+                self.automaton.change_state('goal_state')
             else:
                 # Re-enter the same state
                 self.automaton.change_state('moving_state')
 
-        elif event == 'hand_released':
+        elif event == 'head_released':
 
-            print('[INFO] Fired hand_released event')
+            print('[INFO] Fired head_released event')
             print(time.time())
             # Stop the robot
             self.automaton.action_manager.mo_service.stopMove()
@@ -167,7 +167,7 @@ class MovingState(State):
         to compute the velocity vector based on the deltas in x, y directions
         """
 
-        v_max = self.automaton.action_manager.default_lin_vel
+        # v_max = self.automaton.action_manager.default_lin_vel
 
         x_r, y_r, theta_r = self.automaton.action_manager.mo_service.getRobotPosition(False)
 
@@ -202,6 +202,27 @@ class MovingState(State):
 
         return v_x, v_y
 
+class GoalState(TimeoutState):
+
+    def __init__(self, automaton):
+        super(GoalState, self).__init__('goal_state', automaton, timeout=3, timeout_event='time_elapsed')
+
+    def on_enter(self):
+        super(GoalState, self).on_enter()
+        print('[INFO] Entering Goal State')
+
+        # Signaling the user it should step back
+        if self.automaton.disability == "blind":
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
+        else:
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
+        print('[INFO] Signaling the user we reached the goal')
+
+    def on_event(self, event):
+        super(GoalState, self).on_event(event)
+        if event == 'time_elapsed':
+            self.automaton.change_state('quit_state')
+
 class QuitState(State):
 
     def __init__(self, automaton):
@@ -215,12 +236,12 @@ class QuitState(State):
         self.automaton.perform_movement(joint_values=default_posture)
         print('[INFO] Resetting posture')
 
-        # Signaling the user we reached the target
-        if self.automaton.disability == 0:
-            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_goal)
+        # Signaling the user it should step back
+        if self.automaton.disability == "blind":
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_disagree)
         else:
-            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_goal)
-        print('[INFO] Signaling the user we reached the target')
+            self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_disagree)
+        print('[INFO] Signaling the user it should step back')
 
         self.automaton.release_resources()
         print('[INFO] Releasing resources')
@@ -233,8 +254,8 @@ class QuitState(State):
 
 class HoldHandState(TimeoutState):
 
-    def __init__(self, automaton, timeout=10):
-        super(HoldHandState, self).__init__('hold_hand_state', automaton, timeout=timeout, timeout_event='time_elapsed')
+    def __init__(self, automaton):
+        super(HoldHandState, self).__init__('hold_hand_state', automaton, timeout=automaton.timeout, timeout_event='time_elapsed')
 
     def on_enter(self):
         super(HoldHandState, self).on_enter()
@@ -247,7 +268,7 @@ class HoldHandState(TimeoutState):
 
     def on_event(self, event):
         super(HoldHandState, self).on_event(event)
-        if event == 'hand_touched':
+        if event == 'head_touched':
             self.automaton.change_state('moving_state')
         elif event == 'time_elapsed':
             self.automaton.change_state('quit_state')
@@ -255,17 +276,17 @@ class HoldHandState(TimeoutState):
 
 class AskState(TimeoutState):
 
-    def __init__(self, automaton, timeout=10):
-        super(AskState, self).__init__('ask_state', automaton, timeout=timeout, timeout_event='steady_state')
+    def __init__(self, automaton):
+        super(AskState, self).__init__('ask_state', automaton, timeout=automaton.timeout, timeout_event='steady_state')
 
     def on_enter(self):
         super(AskState, self).on_enter()
         print("[INFO] Entering Ask State")
 
-        if self.automaton.disability == 0:  # Blindness
+        if self.automaton.disability == "blind":
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.blind_ask_cancel)
             print('[INFO] Asking the user if he wants to cancel the procedure')
-        elif self.automaton.disability == 1:
+        elif self.automaton.disability == "deaf":
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_ask_cancel)
             print('[INFO] Showing buttons for the user to choose if he wants to cancel the procedure')
 
@@ -279,7 +300,7 @@ class AskState(TimeoutState):
             self.automaton.change_state('quit_state')
         elif event == 'result_no':
             self.automaton.change_state('hold_hand_state')
-        elif event == 'hand_touched':
+        elif event == 'head_touched':
             self.automaton.change_state('moving_state')
         elif event == 'time_elapsed':
             self.automaton.change_state('quit_state')
@@ -287,31 +308,39 @@ class AskState(TimeoutState):
 
 class RobotAutomaton(FiniteStateAutomaton):
 
-    def __init__(self, modim_web_server, action_manager, position_manager, arm='Left', alevel=0):
+    def __init__(self,
+                 modim_web_server,
+                 action_manager,
+                 position_manager,
+                 disability=0,
+                 timeout=60,
+                 default_lin_vel=0.15
+                 ):
         super(RobotAutomaton, self).__init__()
         self.modim_web_server = modim_web_server
         self.action_manager = action_manager
         self.position_manager = position_manager
-        self.arm = arm
-        self.alevel = alevel
+        self.disability = disability
+        self.timeout = timeout
+        self.default_lin_vel = default_lin_vel
 
         # Connect the touch event to the automata
-        touch_event = "Hand" + arm + "BackTouched"
+        touch_event = "MiddleTactilTouched"
         self.touch_subscriber = self.action_manager.me_service.subscriber(touch_event)
-        self.touch_id = self.touch_subscriber.signal.connect(self.on_hand_touch_change)
+        self.touch_id = self.touch_subscriber.signal.connect(self.on_head_touch_change)
 
     # ----------------------------- Utility functions ---------------------------- #
 
-    def on_hand_touch_change(self, value):
+    def on_head_touch_change(self, value):
         """
-        Callback function triggered when the hand touch event occurs.
+        Callback function triggered when the head touch event occurs.
         Dispatch the event to the automata.
         """
-        print("[INFO] Hand touch value changed: " + str(value))
+        print("[INFO] Head touch value changed: " + str(value))
         if value == 0.0:
-            self.on_event('hand_released')
+            self.on_event('head_released')
         else:
-            self.on_event('hand_touched')
+            self.on_event('head_touched')
 
     def perform_animation(self, animation, _async=True):
         """
@@ -325,7 +354,7 @@ class RobotAutomaton(FiniteStateAutomaton):
 
     def perform_movement(self, joint_values, speed=1.0, _async=True):
         """
-        Perform the motion specified by the provided joint values. Joint values 
+        Perform the motion specified by the provided joint values. Joint values
         should be in the allowed range, otherwise the value is silently discarded
         """
 
@@ -347,39 +376,33 @@ class RobotAutomaton(FiniteStateAutomaton):
         Give instructions on how to start to the user. Instructions can be shown on the tablet (deaf user) 
         or said by the robot (blind user)
         """
-        if self.alevel == 0:  # Blindness
-            if self.arm == 'Left':
-                print('[INFO] Instructing user with alevel=0 arm=Left')
-                self.modim_web_server.run_interaction(self.action_manager.left_blind_walk_hold_hand)
-            else:
-                print('[INFO] Instructing user with alevel=0 arm=Right')
-                self.modim_web_server.run_interaction(self.action_manager.right_blind_walk_hold_hand)
-        elif self.alevel == 1:
-            if self.arm == 'Left':
-                print('[INFO] Instructing user with alevel=1 arm=Left')
-                self.modim_web_server.run_interaction(self.action_manager.left_deaf_walk_hold_hand)
-            else:
-                print('[INFO] Instructing user with alevel=1 arm=Right')
-                self.modim_web_server.run_interaction(self.action_manager.right_deaf_walk_hold_hand)
-        time.sleep(2)
+        print("[INFO] Instructing (" + self.disability + ") user")
+        if self.disability == "blind":
+            self.modim_web_server.run_interaction(self.action_manager.blind_walk_hold_head)
+        else:
+            self.modim_web_server.run_interaction(self.action_manager.deaf_walk_hold_head)
     
     def release_resources(self):
         self.touch_subscriber.signal.disconnect(self.touch_id)
 
-def create_automaton(modim_web_server, action_manager, position_manager, wtime=10, arm='Left', alevel=0):
-    automaton = RobotAutomaton(modim_web_server, action_manager, position_manager, arm=arm, alevel=alevel)
+def create_automaton(modim_web_server, action_manager, position_manager, **kwargs):
+
+    automaton = RobotAutomaton(
+        modim_web_server,
+        action_manager,
+        position_manager,
+        **kwargs
+    )
 
     # Define and add states to the automaton
-    steady_state = SteadyState(automaton, timeout=wtime)
-    # moving_state = MovementTimeoutState(automaton)
+    steady_state = SteadyState(automaton)
     moving_state = MovingState(automaton)
-    ask_state = AskState(automaton, timeout=wtime)
-    hold_hand_state = HoldHandState(automaton, timeout=wtime)
+    ask_state = AskState(automaton)
+    hold_hand_state = HoldHandState(automaton)
+    goal_state = GoalState(automaton)
     quit_state = QuitState(automaton)
 
-    for state in [steady_state, moving_state, ask_state, hold_hand_state, quit_state]:
+    for state in [steady_state, moving_state, ask_state, hold_hand_state, goal_state, quit_state]:
         automaton.add_state(state)
-
-    # automaton.start('steady_state')
 
     return automaton

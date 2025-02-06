@@ -1,7 +1,6 @@
 import sys
 import os
 import argparse
-import time
 import qi
 
 try:
@@ -14,21 +13,12 @@ except Exception as e:
 
 from ws_client import *
 
+from src.automaton.robot_automaton import create_automaton
 from src.actions.position_manager import PositionManager
 from src.actions.action_manager import ActionManager
 from src.users.user_manager import UserManager
-from src.users.user import User
-
-from src.guide_me import guide_me
 from src.utils.paths import get_path
-
-
-def is_file_empty(file_path):
-    try:
-        return os.path.isfile(file_path) and os.path.getsize(file_path) == 0
-    except Exception as e:
-        print("An error occurred: " + str(e))
-        return False
+from src.users.user import User
 
 
 if __name__ == "__main__":
@@ -210,19 +200,16 @@ if __name__ == "__main__":
             print("[INFO] Route to " + target_room + ":")
             print("[INFO] " + " -> ".join([room.name for room in path]))
 
-            # Use the first node of the path to establish which hand to raise
-            first_room = path[0]
-            arm_picked = 'Right' if first_room.x < 0 else 'Left'
-            print("[INFO] Selected " + arm_picked.lower() + " hand to raise")
-
-            """
             # Create the automaton
-            robot_automaton = create_automaton(modim_web_server, action_manager, position_manager, wtime=wtime,
-                                               arm=arm_picked,
-                                               alevel=user.disability)
+            robot_automaton = create_automaton(
+                mws,
+                action_manager,
+                position_manager,
+                timeout=args.wtime,
+                disability=active_user.disability
+            )
 
             # Start
             robot_automaton.start('steady_state')
-            """
 
 app.run()

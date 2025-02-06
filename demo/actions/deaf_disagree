@@ -1,12 +1,12 @@
 IMAGE
-<*, *, *, *>:  img/sad.png
+<*, *, *, *>:  img/danger.png
 ----
 GESTURE
 <*,*,*,*>: animations/Stand/Gestures/Desperate_5
 ----
 TEXT
-<*,*,it,*>: Peccato! Allontanarsi per favore!
-<*,*,*,*>:  I'm sorry! Step back please!
+<*,*,it,*>: Allontanarsi per favore!
+<*,*,*,*>:  Step back please!
 ----
 
 

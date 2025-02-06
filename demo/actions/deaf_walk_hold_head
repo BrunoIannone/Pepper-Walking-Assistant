@@ -4,7 +4,7 @@ IMAGE
 GESTURE
 <*,*,*,*>: animations/Stand/Gestures/Choice_1
 ----
-TTS
-<*,*,it,*>: Prendi il mio braccio sinistro per continuare
-<*,*,*,*>:  Hold my left arm to continue
+TEXT
+<*,*,it,*>: Tienimi la testa per continuare
+<*,*,*,*>:  Hold my head to continue
 ----

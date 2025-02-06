@@ -1,7 +1,7 @@
 IMAGE
-<*, *, *, *>:  img/sad.png
+<*, *, *, *>:  img/danger.png
 ----
 TTS
-<*,*,it,*>: Peccato! Allontanarsi per favore!
-<*,*,*,*>:  I'm sorry! Step back please!
+<*,*,it,*>: Allontanarsi per favore!
+<*,*,*,*>:  Step back please!
 ----
