@@ -192,6 +192,7 @@ class MovingState(State):
             else None
         )
 
+        # TODO current room should not be taken from the file
         curr = self.current_room
         target = self.next_room
         x_vel, y_vel = self.compute_velocity(curr.x, curr.y, target.x, target.y)
@@ -199,18 +200,20 @@ class MovingState(State):
 
         position = (curr.x, curr.y)
         goal = (target.x, target.y)
-        head_touched = False
+        head_touched = True
+        print("Current ", position, "|", goal)
         while self.distance(position, goal) > self.eps and head_touched:
 
             head_touched = self.automaton.action_manager.is_head_touched()
             if not head_touched:
-                self.automaton.change_state('head_released')
+                self.automaton.on_event('head_released')
+                break
 
             position_arr = self.automaton.action_manager.mo_service.getRobotPosition(False)
             position = (position_arr[0], position_arr[1])
-            print("Current position: ", position)
+            print("Current ", position, "|", goal)
 
-        self.automaton.change_state("room_reached")
+        self.automaton.on_event("room_reached")
 
     def on_event(self, event):
         super(MovingState, self).on_event(event)

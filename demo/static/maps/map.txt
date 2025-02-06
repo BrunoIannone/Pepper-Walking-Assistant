@@ -1,7 +1,7 @@
-Lobby 0 1
-Cafe 0 2
-Library 0 3
-Office 0 4
+Lobby 0 0
+Cafe 1 0
+Library 2 0
+Office 3 0
 Secretariat -99 -99
 
 Lobby Cafe 3 1

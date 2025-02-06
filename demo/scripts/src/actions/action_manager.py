@@ -16,9 +16,9 @@ class ActionManager:
         self.to_service = session.service("ALTouch")
 
     def is_head_touched(self):
-        sensors = self.to_service.getStatus()
-        middle_touch = next((s["value"] for s in sensors if s["name"] == "Head/Touch/Middle"), None)
-        return middle_touch == 1.0
+        sensors_list = self.to_service.getStatus()
+        middle_touch = [s[1] for s in sensors_list if s[0] == "Head/Touch/Middle"]
+        return middle_touch
 
     def get_actions_path(self):
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../../actions/")
