@@ -102,7 +102,7 @@ docker ps -a
 
     Outside of Docker, run the following command from the `hri_software/docker` directory:
     ```bash
-    ./run_nginx.bash $HOME/playground/Pepper-Walking-Assistant/demo/
+    ./run_nginx.bash <playground>/Pepper-Walking-Assistant/demo/
     ```
    
     Note: You should kill manually Nginx after you're done.
