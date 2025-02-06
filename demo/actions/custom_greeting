@@ -2,8 +2,8 @@ IMAGE
                     <*, *, *, *>:  img/hello.png
                     ----
                     TEXT
-                    <*,*,it,*>: Benvenuto Iacopo
-                    <*,*,*,*>:  Welcome Iacopo
+                    <*,*,it,*>: Benvenuto 
+                    <*,*,*,*>:  Welcome 
                     ----
                     GESTURE
                     <*,*,*,*>: animations/Stand/Gestures/Hey_1

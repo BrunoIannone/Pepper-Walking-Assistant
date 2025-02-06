@@ -34,7 +34,7 @@ class RoomMapper(Graph):
         with open(filename, 'w') as f:
             # Write rooms (coordinates)
             for room in self.rooms.itervalues():
-                f.write("{0} {1} {2}\n".format(room.value, room.x, room.y))
+                f.write("{0} {1} {2}\n".format(room.name, room.x, room.y))
 
             # Write empty line as delimiter
             f.write("\n")
@@ -42,9 +42,9 @@ class RoomMapper(Graph):
             # Write connections
             for node, neighbors in self.adjacency_list.iteritems():
                 for neighbor, weight, accessibility in neighbors:
-                    if self.directed or node.value < neighbor.value:  # Avoid duplicate edges in undirected graph
+                    if self.directed or node.name < neighbor.name:  # Avoid duplicate edges in undirected graph
                         f.write("{0} {1} {2} {3}\n".format(
-                            node.value, neighbor.value, weight, accessibility))
+                            node.name, neighbor.name, weight, accessibility))
 
     def load(self, filename):
         self.rooms.clear()

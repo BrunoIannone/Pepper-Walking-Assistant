@@ -71,25 +71,38 @@ class ActionManager:
 
     def interaction_register_user(self):
 
-        # Default values
-        line = ""
+        disability = None
+        language = None
 
-        modality = im.ask("record_user", timeout=999)
-        if modality == "touch":
-            line += "deaf"
-        elif modality == "vocal":
-            line += "blind"
+        result = im.ask("record_user", timeout=999)
+        if result == "failure":
+
+            with open('/home/robot/playground/outcome.txt', 'w') as file:
+                file.write("failure")
+
+            im.init()
+
         else:
-            line = "failure"
 
-        language = im.ask("ask_language", timeout=999)
-        if language == "failure":
-            line = "failure"
-        else:
-            line += (" " + language)
+            if result == "touch":
+                disability = "deaf"
+            else:
+                disability = "blind"
 
-        with open('/home/robot/playground/outcome.txt', 'w') as file:
-            file.write(line)
+            result = im.ask("ask_language", timeout=999)
+            if result == "failure":
+
+                with open('/home/robot/playground/outcome.txt', 'w') as file:
+                    file.write("failure")
+
+                im.init()
+
+            else:
+
+                language = result
+
+                with open('/home/robot/playground/outcome.txt', 'w') as file:
+                    file.write(disability + " " + language)
 
     # ----------------------------- Blind interaction ---------------------------- #
 
@@ -122,6 +135,13 @@ class ActionManager:
         with open("/home/robot/playground/outcome.txt", "w") as file:
             file.write(q)
         time.sleep(2)
+
+    def blind_call(self):
+        im.execute('blind_call')
+        time.sleep(10)
+
+    def blind_goal(self):
+        im.execute('blind_goal')
 
     # ----------------------------- Deaf interaction ----------------------------- #
 
@@ -159,27 +179,20 @@ class ActionManager:
             file.write(q)
         time.sleep(2)
 
-    # ---------------------------------- General --------------------------------- #
-
     def deaf_call(self):
         im.execute('deaf_call')
         time.sleep(10)
 
-    def blind_call(self):
-        im.execute('blind_call')
-        time.sleep(10)
+    def deaf_goal(self):
+        im.execute('deaf_goal')
+
+    # ---------------------------------- General --------------------------------- #
 
     def blind_walking(self):
         im.execute('blind_walking')
 
     def deaf_walking(self):
         im.execute('deaf_walking')
-
-    def blind_goal(self):
-        im.execute('blind_goal')
-
-    def deaf_goal(self):
-        im.execute('deaf_goal')
 
     def welcome(self):
         im.execute('welcome')
@@ -195,29 +208,6 @@ class ActionManager:
 
     def right_deaf_walk_hold_hand(self):
         im.execute('right_deaf_walk_hold_hand')
-
-    def wait_for_human(self):
-        stop_detection = False
-        is_human_detected = False
-
-        #Checking if human stay in front of Pepper more than 2 seconds
-        im.robot.startSensorMonitor()
-        while not stop_detection:
-            while not is_human_detected:
-                p = im.robot.sensorvalue()  #p is the array with data of all the sensors
-                print("SENSOR VALUE " + p)
-                is_human_detected = p[1] > 0.0 and p[1] < 1.0  #p[1] is the Front sonar
-            if is_human_detected:
-                print('*Person detected*')
-                time.sleep(2)
-                p = im.robot.sensorvalue()
-                is_human_detected = p[1] > 0.0 and p[1] < 1.0
-                if is_human_detected:
-                    print('*Person still there*')
-                    stop_detection = True
-                else:
-                    print('*Person gone*')
-        im.robot.stopSensorMonitor()
 
     def failure(self):
         im.init()
@@ -240,3 +230,6 @@ class ActionManager:
             print("[INFO] Motion stopped. Current position: ({}, {})".format(current_x, current_y))
         except Exception as e:
             print("[ERROR] Failed to stop motion: {}".format(e))
+
+    def disable_security_features(self):
+        self.mo_service.setExternalCollisionProtectionEnabled("All", False)

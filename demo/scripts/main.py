@@ -86,23 +86,14 @@ if __name__ == "__main__":
 
         mws.run_interaction(action_manager.interaction_register_user)
 
-        file_path = "/home/robot/playground/outcome.txt"
-        while is_file_empty(file_path):
-            time.sleep(0.01)
-
-        # Take the content of the file
-        user_data = ""
-        with open(file_path, "r") as file:
-            lines = file.readlines()
-            if len(lines) > 0:
-                user_data = lines[0]
+        user_data = action_manager.check_status()
         print("[INFO] User data: " + user_data)
 
         user_tokens = user_data.split()
         if len(user_tokens) > 1:
             alevel = user_tokens[0]
             language = user_tokens[1]
-            active_user = User(len(user_manager.users), "Unknown", alevel, language)
+            active_user = User(len(user_manager.users), "", alevel, language)
             print('[INFO] User created: ' + str(active_user))
 
             # Dump the new user to file
@@ -143,20 +134,7 @@ if __name__ == "__main__":
     else:
         raise ValueError("Invalid disability: " + active_user.disability)
 
-    """
-    file_path = '/home/robot/playground/outcome.txt'
-    while is_file_empty(file_path):
-        time.sleep(0.01)
-
-    # Take the content of the file
-    result = ""
-    with open(file_path, "r") as file:
-        lines = file.readlines()
-        result = lines[0]
-    print("[INFO] User replied: " + dest)
-    """
     result = action_manager.check_status()
-
     if result == 'failure':
         print('[INFO] Help procedure aborted')
 
@@ -172,9 +150,7 @@ if __name__ == "__main__":
     else:
 
         # Disable security
-        # action_manager.mo_service.setExternalCollisionProtectionEnabled("All", False)
-
-        # guide_me(active_user, args.current_room, dest, mws, action_manager, position_manager, wtime=args.wtime)
+        # action_manager.disable_security_features()
 
         current_room = args.current_room
         target_room = result
@@ -199,6 +175,7 @@ if __name__ == "__main__":
 
         path = position_manager.compute_path(current_room, target_room, active_user.disability)
 
+        # No route to target room
         if len(path) == 0:
 
             print("[INFO] No route to " + target_room)
@@ -228,5 +205,24 @@ if __name__ == "__main__":
                 mws.run_interaction(action_manager.failure)
                 exit(1)
 
+        else:
+
+            print("[INFO] Route to " + target_room + ":")
+            print("[INFO] " + " -> ".join([room.name for room in path]))
+
+            # Use the first node of the path to establish which hand to raise
+            first_room = path[0]
+            arm_picked = 'Right' if first_room.x < 0 else 'Left'
+            print("[INFO] Selected " + arm_picked.lower() + " hand to raise")
+
+            """
+            # Create the automaton
+            robot_automaton = create_automaton(modim_web_server, action_manager, position_manager, wtime=wtime,
+                                               arm=arm_picked,
+                                               alevel=user.disability)
+
+            # Start
+            robot_automaton.start('steady_state')
+            """
 
 app.run()
