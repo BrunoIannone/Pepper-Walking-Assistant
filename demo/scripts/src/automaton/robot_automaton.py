@@ -76,7 +76,7 @@ class QuitState(State):
         print('[INFO] Releasing resources')
 
         print("[INFO] Done")
-        exit(1)
+        #exit(1)
 
     def on_event(self, event):
         super(QuitState, self)
@@ -139,15 +139,18 @@ class AskState(TimeoutState):
 
 class MovingState(State):
 
-    def __init__(self, automaton, eps=0.2, lin_vel=0.15):
+    def __init__(self, automaton, eps=0.2, lin_vel=1):
         super(MovingState, self).__init__('moving_state', automaton)
 
         self.current_room = None
         self.next_room = None
         self.path_index = 0
-
+        self.total_movement = 10
         self.lin_vel = lin_vel
         self.eps = eps
+        self.goal_distance = 10  # Total distance the robot should walk
+        self.total_distance_walked = 0  # Track walked distance
+        self.last_position = None  # Store last known position
 
     @classmethod
     def distance(cls, curr, target):
@@ -174,6 +177,36 @@ class MovingState(State):
         y_vel = max(min(y_vel, 1), -1)
 
         return x_vel, y_vel
+    
+    def monitor_head_touch(self):
+        """Continuously check if head has been released while moving."""
+        while self.monitoring:
+            # Get current position
+            position_arr = self.automaton.action_manager.mo_service.getRobotPosition(False)
+            current_position = (position_arr[0], position_arr[1])
+
+            # Calculate distance moved
+            if self.last_position:
+                moved_distance = self.distance(self.last_position, current_position)
+                self.total_distance_walked += moved_distance
+                self.last_position = current_position
+
+            print("[INFO] Distance walked:"+ str(self.total_distance_walked / self.goal_distance)+" meters")
+
+            # Stop if goal distance reached
+            if self.total_distance_walked >= self.goal_distance:
+                print("[INFO] Goal reached. Transitioning to goal_state.")
+                self.automaton.on_event("goal_reached")
+                return
+
+            head_touched = self.automaton.action_manager.is_head_touched()
+            if not head_touched:
+                print("[INFO] Head released detected. Stopping movement...")
+                self.automaton.action_manager.mo_service.stopMove()
+                self.automaton.on_event('head_released')
+                return
+
+            time.sleep(0.1)  # Prevent CPU overload
 
     def on_enter(self):
         super(MovingState, self).on_enter()
@@ -192,62 +225,71 @@ class MovingState(State):
             else None
         )
 
-        # TODO current room should not be taken from the file
-        curr = self.current_room
-        target = self.next_room
-        x_vel, y_vel = self.compute_velocity(curr.x, curr.y, target.x, target.y)
-        self.automaton.action_manager.mo_service.moveToward(x_vel, y_vel, 0)
+        # Ensure we have a valid next room
+        if not self.next_room:
+            print("[ERROR] No next room found!")
+            return
+        
+        # Get initial position
+        position_arr = self.automaton.action_manager.mo_service.getRobotPosition(False)
+        self.last_position = (position_arr[0], position_arr[1])
 
-        position = (curr.x, curr.y)
-        goal = (target.x, target.y)
-        head_touched = True
-        print("Current ", position, "|", goal)
-        while self.distance(position, goal) > self.eps and head_touched:
+        # Start movement
+        self.automaton.action_manager.mo_service.moveToward(self.lin_vel, 0, 0)
 
-            head_touched = self.automaton.action_manager.is_head_touched()
-            if not head_touched:
-                self.automaton.on_event('head_released')
-                break
 
-            position_arr = self.automaton.action_manager.mo_service.getRobotPosition(False)
-            position = (position_arr[0], position_arr[1])
-            print("Current ", position, "|", goal)
+        # curr = self.current_room
+        # target = self.next_room
+        # x_vel, y_vel = self.compute_velocity(curr.x, curr.y, target.x, target.y)
+        # self.automaton.action_manager.mo_service.moveToward(x_vel, y_vel, 0)
 
-        self.automaton.on_event("room_reached")
+        # Start monitoring head touch in a separate thread
+        self.monitoring = True
+        t = threading.Thread(target=self.monitor_head_touch)
+        t.setDaemon(True)  # Python 2 way of setting daemon mode
+        t.start()
 
     def on_event(self, event):
         super(MovingState, self).on_event(event)
-
-        if event == 'room_reached':
-
-            print('[INFO] Fired room_reached event')
-            print(time.time())
-
-            # Go to the next room
-            self.path_index += 1
-
-            # Check if we reached the goal (we are now currently on the last position in the path)
-            if self.path_index == len(self.automaton.position_manager.path) - 1:
-
-                # current the robot
-                print("[INFO] currentping the robot")
-                self.automaton.action_manager.mo_service.moveToward(0, 0, 0)
-
-                print("[INFO] Path completed. Transitioning to GoalState.")
-                self.automaton.change_state('goal_state')
-
-            else:
-                # Re-enter the same state
-                self.automaton.change_state('moving_state')
+        
+        if event == 'goal_reached':
+            self.automaton.action_manager.mo_service.moveToward(0, 0, 0)  # Stop robot
+            self.automaton.change_state('goal_state')
 
         elif event == 'head_released':
-
-            print('[INFO] Fired head_released event')
-
-            # Stop the robot
-            self.automaton.action_manager.mo_service.stopMove()
-
+            print("[INFO] Stopping movement and switching to ask_state")
+            self.monitoring = False  # Stop monitoring
             self.automaton.change_state('ask_state')
+        # if event == 'room_reached':
+
+        #     print('[INFO] Fired room_reached event')
+        #     print(time.time())
+
+        #     # Go to the next room
+        #     self.path_index += 1
+
+        #     # Check if we reached the goal (we are now currently on the last position in the path)
+        #     if self.path_index == len(self.automaton.position_manager.path) - 1:
+
+        #         # current the robot
+        #         print("[INFO] currentping the robot")
+        #         self.automaton.action_manager.mo_service.moveToward(0, 0, 0)
+
+        #         print("[INFO] Path completed. Transitioning to GoalState.")
+        #         self.automaton.change_state('goal_state')
+
+        #     else:
+        #         # Re-enter the same state
+        #         self.automaton.change_state('moving_state')
+
+        # elif event == 'head_released':
+
+        #     print('[INFO] Fired head_released event')
+
+        #     # Stop the robot
+        #     self.automaton.action_manager.mo_service.stopMove()
+
+        #     self.automaton.change_state('ask_state')
 
 class RobotAutomaton(FiniteStateAutomaton):
 
