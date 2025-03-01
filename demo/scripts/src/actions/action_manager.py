@@ -171,13 +171,13 @@ class ActionManager:
         time.sleep(2)
 
     def deaf_ask_cancel(self):
-        q = im.ask('deaf_ask_cancel', timeout=999)
-        if q == 'yes':
-            with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write('yes')
-        else:
-            with open("/home/robot/playground/outcome.txt","w") as file:
-                file.write('failure')
+        im.execute('deaf_ask_cancel')
+        # if q == 'yes':
+        #     with open("/home/robot/playground/outcome.txt","w") as file:
+        #         file.write('yes')
+        # else:
+        #     with open("/home/robot/playground/outcome.txt","w") as file:
+        #         file.write('failure')
 
     def deaf_ask_call(self):
         q = im.ask('deaf_ask_call', timeout=999)

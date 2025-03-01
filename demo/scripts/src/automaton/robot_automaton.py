@@ -118,13 +118,13 @@ class AskState(TimeoutState):
             self.automaton.modim_web_server.run_interaction(self.automaton.action_manager.deaf_ask_cancel)
             print('[INFO] Showing buttons for the user to choose if he wants to cancel the procedure')
 
-        result = self.automaton.action_manager.check_status()
-        print('[INFO] Obtained response: ' + result)
+        # result = self.automaton.action_manager.check_status()
+        # print('[INFO] Obtained response: ' + result)
 
-        if result == "failure":
-            self.automaton.on_event("result_no")
-        else:
-            self.automaton.on_event("result_yes")
+        # if result == "failure":
+        #     self.automaton.on_event("result_no")
+        # else:
+        #     self.automaton.on_event("result_yes")
 
     def on_event(self, event):
         super(AskState, self).on_event(event)
@@ -135,6 +135,8 @@ class AskState(TimeoutState):
         elif event == 'head_touched':
             self.automaton.change_state('moving_state')
         elif event == 'time_elapsed':
+            self.automaton.change_state('quit_state')
+        elif event == 'steady_state':
             self.automaton.change_state('quit_state')
 
 class MovingState(State):
