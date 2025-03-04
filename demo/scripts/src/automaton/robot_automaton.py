@@ -201,14 +201,15 @@ class MovingState(State):
                 self.automaton.on_event("goal_reached")
                 return
 
-            head_touched = self.automaton.action_manager.is_head_touched()
-            if not head_touched:
-                print("[INFO] Head released detected. Stopping movement...")
-                self.automaton.action_manager.mo_service.stopMove()
-                self.automaton.on_event('head_released')
-                return
+            
 
             time.sleep(0.1)  # Prevent CPU overload
+        head_touched = self.automaton.action_manager.is_head_touched()
+        if not head_touched[0]:
+            print("[INFO] Head released detected. Stopping movement...")
+            self.automaton.action_manager.mo_service.stopMove()
+            self.automaton.on_event('head_released')
+            return
 
     def on_enter(self):
         super(MovingState, self).on_enter()
