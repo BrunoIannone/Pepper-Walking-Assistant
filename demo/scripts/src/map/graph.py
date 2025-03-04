@@ -73,7 +73,7 @@ class Graph(object):
                 return distances[end], self._reconstruct_path(parents, start, end)
 
             for neighbor, weight, accessibility_weight in self.adjacency_list[current_node]:
-                if accessibility_weight <= accessibility_level:
+                if accessibility_weight < accessibility_level:
                     tentative_distance = distances[current_node] + weight
                     if tentative_distance < distances[neighbor]:
                         distances[neighbor] = tentative_distance

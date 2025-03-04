@@ -14,6 +14,13 @@ class PositionManager:
         return room in self.room_mapper.rooms.keys()
 
     def compute_path(self, start_room, end_room, accessibility_level):
+        print("pre[INFO]"+ accessibility_level)
+
+        if accessibility_level=="blind":
+            accessibility_level = 1
+        else:
+            accessibility_level = 0
+        print("post[INFO]"+ str(accessibility_level))
         path_len, path = self.room_mapper.shortest_path(start_room, end_room, accessibility_level)
         if path_len == float('inf'):
             return []
