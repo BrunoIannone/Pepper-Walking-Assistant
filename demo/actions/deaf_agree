@@ -1,0 +1,27 @@
+IMAGE
+<*, *, *, *>:  img/happy.png
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Yes_1
+----
+TEXT
+<*,*,it,*>: Scegli la tua destinazione!
+<*,*,*,*>:  Choose your destination!
+----
+BUTTONS
+Lobby
+<*,*,it,*>: Lobby
+<*,*,*,*>:  Lobby
+Cafe
+<*,*,it,*>: Caffetteria
+<*,*,*,*>: Cafe
+Library
+<*,*,it,*>: Biblioteca
+<*,*,*,*>: Library
+Office
+<*,*,it,*>: Ufficio
+<*,*,*,*>: Office
+Secretariat
+<*,*,it,*>: Segreteria
+<*,*,*,*>: Secretariat
+----

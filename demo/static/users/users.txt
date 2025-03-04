@@ -1,0 +1,5 @@
+0, Daniel, blind, en
+1, Iacopo, deaf, it
+2, Bruno, deaf, it
+3, Unknown, deaf, en
+4, , deaf, en

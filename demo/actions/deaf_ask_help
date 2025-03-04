@@ -1,0 +1,19 @@
+IMAGE
+<*, *, *, *>:  img/help.png
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/ShowTablet_2	
+----
+TEXT
+<*,*,it,*>: Posso esserti di aiuto?
+<*,*,*,*>:  May I help you?
+----
+BUTTONS
+yes
+<*,*,it,*>: Si
+<*,*,*,*>:  Yes
+no
+<*,*,it,*>: No
+<*,*,*,*>:  No
+----
+

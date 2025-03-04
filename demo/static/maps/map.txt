@@ -1,0 +1,16 @@
+Lobby 0 0
+Cafe 1 0
+Library 2 0
+Office 3 0
+Secretariat -99 -99
+
+Lobby Cafe 3 1
+Lobby Library 3 0
+Library Lobby 3 0
+Library Cafe 1 1
+Library Office 4 0
+Cafe Lobby 3 1
+Cafe Library 1 1
+Cafe Office 2 0
+Office Cafe 2 0
+Office Library 4 0

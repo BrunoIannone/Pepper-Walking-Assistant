@@ -1,0 +1,10 @@
+IMAGE
+                    <*, *, *, *>:  img/hello.png
+                    ----
+                    TEXT
+                    <*,*,it,*>: Benvenuto Iacopo
+                    <*,*,*,*>:  Welcome Iacopo
+                    ----
+                    GESTURE
+                    <*,*,*,*>: animations/Stand/Gestures/Hey_1
+                    ----

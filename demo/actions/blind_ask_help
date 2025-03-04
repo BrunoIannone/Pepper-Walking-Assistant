@@ -1,0 +1,11 @@
+IMAGE
+<*, *, *, *>:  img/help.png
+----
+TTS
+<*,*,it,*>: Posso esserti di aiuto?
+<*,*,*,*>:  May I help you?
+----
+ASR
+<*,*,it,*>:  {'yes': ['si', 'certo', 'certamente', 'assolutamente'], 'no': ['no'], 'failure':['cancella','esci','annulla','abbandona']}
+<*,*,*,*>:  {'yes': ['yes', 'certainly', 'absolutely'], 'no': ['no'], 'failure': ['cancel', 'abort','exit']}
+----

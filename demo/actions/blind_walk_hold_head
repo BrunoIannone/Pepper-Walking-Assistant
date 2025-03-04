@@ -1,0 +1,10 @@
+IMAGE
+<*, *, *, *>:  img/question_mark.png
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Choice_1
+----
+TTS
+<*,*,it,*>: Tienimi la testa per continuare
+<*,*,*,*>:  Hold my head to continue
+----

@@ -1,0 +1,13 @@
+IMAGE
+<*, *, *, *>:  img/danger.png
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Desperate_5
+----
+TEXT
+<*,*,it,*>: Allontanarsi per favore!
+<*,*,*,*>:  Step back please!
+----
+
+
+

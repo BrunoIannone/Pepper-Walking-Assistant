@@ -1,0 +1,25 @@
+IMAGE
+<*, *, *, *>: img/language.png
+----
+GESTURE
+<*,*,*,*>: animations/Stand/Gestures/Thinking_8
+----
+TEXT
+<*,*,*,*>: Che lingua preferisci: italiano o inglese?
+----
+TTS
+<*,*,*,*>: Che lingua preferisci: italiano o inglese? Choose your language: Italian or English?
+----
+ASR 
+<*,*,*,*>:  {'italian': ['italiano', 'it'], 'english': ['english','en'],'failure':['cancel','abort','exit','cancella','esci','annulla','abbandona']}
+----
+BUTTONS
+it
+<*,*,*,*>: Italiano
+en
+<*,*,*,*>: English
+failure
+<*,*,it,*>: X
+<*,*,*,*>:  X
+----
+
