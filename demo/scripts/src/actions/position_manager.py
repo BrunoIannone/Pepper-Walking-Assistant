@@ -17,9 +17,9 @@ class PositionManager:
         print("pre[INFO]"+ accessibility_level)
 
         if accessibility_level=="blind":
-            accessibility_level = 1
-        else:
             accessibility_level = 0
+        else:
+            accessibility_level = 1
         print("post[INFO]"+ str(accessibility_level))
         path_len, path = self.room_mapper.shortest_path(start_room, end_room, accessibility_level)
         if path_len == float('inf'):

@@ -69,7 +69,7 @@ docker ps -a
 2. **Access the container**
 
     In another terminal:
-    ```bash
+    ```
     docker exec -it pepperhri tmux a
     ```
 
