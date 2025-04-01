@@ -1,14 +1,16 @@
 # Pepper Walking Assistant
 
-This project enables Pepper to help users — both with and without disabilities — navigate through a building or facility. The system uses a set of pre-defined locations and a combination of voice and visual cues to guide the user efficiently. The entire codebase runs within a Docker container. 
+This project enables Pepper to help users — both with and without disabilities — navigate through a building or facility. The system uses a set of pre-defined locations and a combination of voice and visual cues to guide the user. The entire codebase runs within a Docker container. 
 
 Main features are:
-- Assist users with navigation using voice and visual cues.
-- Can be customized to support different buildings and environments by simply defining a graph-like structure.
-- Can be customized to use different languages by defining the set of sentences the robot will use during interaction.
-- The use of an automata to define the behavior of the robot lets us easily add new actions and perform new tasks during user interaction.
+- User profiling with non invasive questioning.
+- Assisting users navigating complex environments using voice and visual cues.
+- Customized support for different buildings and environments enabled by simply defining a graph-like structure.
+- Use of a finite state automata to define the behavior of the robot; this enables us to easily add new actions and perform new tasks during user interaction.
 
-The process is divided into two phases: during the first phase the user approaches the robot and asks for help to reach a place through the tablet or verbally; the robot automatically wakes up if someone stands in front of it; during the second phase, once we established the language, target destination, eventual disability and architectural barriers to avoid, we launch the motion script to compute the path to the destination and perform the actual motion that will lead the user safely to the goal.
+The process is divided into two phases: 
+- The user approaches the robot and asks for help to reach a place through the tablet or verbally. The robot automatically wakes up if someone stands in front of it; 
+- Once we established language, target destination and eventual disability, a motion script is launched to compute the optimal path to the destination, avoiding architectural barriers if needed, and perform the actual motion that will lead the user safely to the goal.
 
 ## Examples
 
@@ -22,22 +24,46 @@ We used a finite state automata to define the robot's behavior during this phase
 ![Finite state automata](media/automata.jpg)
 
 More on the states:
-- `Idle` state: the robot says to the user to hold its left/right hand (depending on the direction for the target room) and waits for user interaction; if the maximum wait time elapses without an interaction, the script terminates;
-- `Moving` state: once the user is holding the robot's hand, the robot moves towards the destination. If the user releases the hand, we move to the `Ask` state. If we actually reach the goal, we move into the `Quit` state;
-- `Ask` state: we reach this state if, during movement, the user leaves the hand of the robot. In this case the robot asks to the user if they really wants to cancel the procedure. The user can respond "No" or touch the hand again to resume or say "Yes" to confirm. If the maximum wait time elapses and the robot does not register a response, we move into the `Quit` state. If the user is deaf or has some kind of hearing impairment, all the interactions happen through the tablet;
-- `Say hold hand` state: if in the `Ask` state the user responds "No" to the question without touching the hand, the robot reminds him to touch the hand with a visual(on the tablet) or vocal message and we move into the `Moving` state again, resuming the motion;  
-- `Quit` state: release all the resources we allocated; 
+- **Idle**: The robot instructs the user to hold its head. It then waits for user interaction. If the maximum wait time elapses without interaction, the automaton goes into the **Quit** state and the procedure is aborted.  
+
+- **Moving**: Once the user holds the robot's head, it starts moving towards the destination.  
+  - If the user releases the head, the system transitions to the **Ask** state.  
+  - If the destination is reached, the system transitions to the **Quit** state.  
+  - When moving, the automaton uses the Motion Manager Module to get the current target (next node to be reached) and the Action Manager Module to actually implement the motion.  
+  - Once it reaches a node, if it is not the last of the path, it transitions again into the **Moving** state with a different target.  
+  - To account for momentary loss of contact, a timer is started upon entering this state, based on the expected movement duration. If interrupted, the timer is halted, preserving the remaining movement time for when the state is re-entered.  
+
+- **Ask**: This state is triggered if the user releases the robot’s head during movement.  
+  - The robot asks whether the user wants to cancel the navigation.  
+  - The user may respond **"No"** or re-establish contact to resume, or respond **"Yes"** to confirm cancellation.  
+  - If the maximum wait time elapses without a response, the system transitions to the **Quit** state.  
+  - For users with hearing impairments, instructions are also provided through the tablet.  
+
+- **Say Hold Head**: If, in the **Ask** state, the user responds **"No"** but does not re-establish contact, the robot reminds them to hold its head via a visual message (on the tablet) or a verbal prompt.  
+  - The system then transitions back to the **Moving** state, resuming motion.  
+  - If no response is given after the robot repeats the instructions, the system transitions to the **Quit** state.  
+
+- **Quit**: The system releases all allocated resources and terminates the guiding process.
+
 
 ## Map
 
-The map we included for demonstration purposes is the following:
-
 ![Map](media/map.jpg)
 
-Each edge shows two weights: distance and accessibility level. At runtime we filter out the edges with accessibility level above the selected one to leave only the paths the user can safely go through and we find the shortest path to the goal with the A* algorithm.
-We provided only two accessibility levels for now: 0 for motor disabilities or blindness, conditions that prevent the user from using stairs, and 1 for the other cases where architectural barriers are not a problem (e.g. deafness).
+- The map is processed as a graph, where each node represents a room or location of interest, and each edge represents a traversable path. Each edge includes information about the cost (time required) and accessibility level. The accessibility level classifies edges based on their suitability for users with mobility or visual impairments. Specifically:  
+  - **Level 0**: The edge is free of architectural barriers and can be traversed by all users.  
+  - **Level 1**: The edge presents obstacles that hinder navigation for individuals with mobility or vision impairments. Such edges should be excluded from the motion planning process when guiding users who require accessible paths.  
 
-Out of simplicity, we suppose all the rooms are arranged on a straight line in order to take out eventual rotations. 
+- During the path planning stage, once the user is identified and their preferred interaction modality is determined, the system infers the appropriate accessibility level for route computation:  
+  - **Visually impaired users**: The system prioritizes auditory guidance and ensures that navigation paths exclude edges classified as Level 0, selecting only those at Level 1 to guarantee ease of traversal.  
+  - **Auditory impaired users**: The system includes both Level 0 and Level 1 edges in the path computation, as architectural barriers do not pose a significant challenge.  
+
+- An example of the graph is illustrated in the following image. Suppose the starting point is the Lobby, and the destination is the Office:  
+  - If no mobility limitations are present, the shortest path allows direct traversal of the corresponding edge, leading straight to the destination.  
+  - For users with mobility impairments, the algorithm instead directs them through the Cafe before reaching the Office (**Figure \ref{fig:map_example_traversal.jpg}**).  
+  - This scenario directly reflects the physical constraints that informed the graph structure. For instance, if the Office is located on the second floor and connected to the Lobby by a staircase, users with mobility impairments cannot traverse it. As a result, the algorithm guides them through the Cafe, where an elevator may be available to facilitate access to the upper level.  
+
+![Map Traversal Example](media/map_example_traversal.jpg)
 
 ## Installation and usage
 
